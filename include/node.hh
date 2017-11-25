@@ -9,11 +9,12 @@
 class Node {
   public:
     Node(const std::string &archive_path, archive_entry *entry,
-         size_t buffer_size = 8096);
+        const std::string &name, size_t buffer_size = 8096);
 
     bool isDirectory();
 
     int64_t size();
+    const std::string name();
 
     void open();
 
@@ -26,6 +27,7 @@ class Node {
 
     archive *_archive = nullptr;
     char *_buffer = nullptr;
+    const std::string _name;
     const size_t _buffer_size;
 };
 

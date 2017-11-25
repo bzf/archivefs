@@ -26,7 +26,8 @@ Archive::Archive(const std::string &path)
     while (archive_read_next_header(_archive, &entry) == ARCHIVE_OK) {
         const std::string pathname = archive_entry_pathname(entry);
         auto ptr = archive_entry_clone(entry);
-        Node node = Node(path, ptr);
+        std::cout << "pathname: " << pathname << std::endl;
+        Node node = Node(path, ptr, pathname);
 
         _dict.insert({"/" + correct_path(pathname), node});
 
@@ -47,6 +48,39 @@ Node* Archive::get_node_for_path(const char* path) {
 
   return nullptr;
 };
+
+std::vector<Node*>
+Archive::get_nodes_in_directory(const char *directory_prefix) {
+  std::vector<Node*> vector;
+
+  auto it = _dict.begin();
+  for (; it != _dict.end(); it++) {
+    // If the path of the it->first is longer than the directory_prefix, it
+    // can't be that node we're looking for
+    if (it->first.length() <= strlen(directory_prefix)) {
+      continue;
+    }
+
+    std::string compare_path = it->first.substr(0, strlen(directory_prefix) - 1);
+    if (compare_path.c_str(), directory_prefix) {
+      // If it contains a `/`, it's a subdir so a no go
+      std::string path_without_directory_prefix =
+        it->first.substr(strlen(directory_prefix), it->first.length() - 1);
+
+      // Remove any leading slashes
+      if (path_without_directory_prefix[0] == '/') {
+        path_without_directory_prefix = path_without_directory_prefix.substr(1, path_without_directory_prefix.length() - 1);
+      }
+
+      // If the folder doesn't end on "/", show it in the directory
+      if (path_without_directory_prefix.find("/") == std::string::npos) {
+        vector.push_back(&(it->second));
+      }
+    }
+  }
+
+  return vector;
+}
 
 /* We can't have paths ending in `/` */
 std::string Archive::correct_path(const std::string &path) {

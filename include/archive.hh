@@ -15,6 +15,7 @@ class Archive {
     Archive(const std::string &path);
 
     Node* get_node_for_path(const char *path);
+    std::vector<Node*> get_nodes_in_directory(const char *directory);
 
     std::map<std::string, Node> _dict;
     archive *_archive = NULL;

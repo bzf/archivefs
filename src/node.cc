@@ -7,12 +7,14 @@
 #include <stdexcept>
 
 Node::Node(const std::string &archive_path, archive_entry *entry,
-           size_t buffer_size)
-    : _archive_path(archive_path), _entry(entry), _buffer_size(buffer_size) {}
+           const std::string& name, size_t buffer_size)
+    : _archive_path(archive_path), _entry(entry), _name(name), _buffer_size(buffer_size) {}
 
 bool Node::isDirectory() { return (archive_entry_filetype(_entry) == 16384); }
 
 int64_t Node::size() { return archive_entry_size(_entry); }
+
+const std::string Node::name() { return _name; }
 
 void Node::open() {
     if (_archive != nullptr) {

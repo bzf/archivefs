@@ -36,35 +36,23 @@ int getxattr_callback(const char *, const char *, char *, size_t, uint32_t) {
     return ENODATA;
 }
 
-int readdir_callback(const char *path, void *buf, fuse_fill_dir_t filler, off_t,
-                     struct fuse_file_info *) {
-    filler(buf, ".", NULL, 0);
-    filler(buf, "..", NULL, 0);
+int readdir_callback(const char *directory_prefix, void *buf, fuse_fill_dir_t filler, off_t,
+    struct fuse_file_info *) {
+  filler(buf, ".", NULL, 0);
+  filler(buf, "..", NULL, 0);
 
-    auto it = g_archive->_dict.begin();
-    for (; it != g_archive->_dict.end(); it++) {
-        if (strcmp(it->first.substr(0, strlen(path) - 1).c_str(), path)) {
-            if (it->first.length() <= strlen(path)) {
-                continue;
-            }
+  auto nodes = g_archive->get_nodes_in_directory(directory_prefix);
 
-            // If it contains a `/`, it's a subdir so a no go
-            std::string rest_of_path =
-                it->first.substr(strlen(path), it->first.length() - 1);
-
-            if (rest_of_path[0] == '/') {
-                rest_of_path =
-                    rest_of_path.substr(1, rest_of_path.length() - 1);
-            }
-
-            // If the folder doesn't end on "/", show it in the directory
-            if (rest_of_path.find("/") == std::string::npos) {
-                filler(buf, rest_of_path.c_str(), NULL, 0);
-            }
-        }
+  auto node_iterator = nodes.begin();
+  for (; node_iterator != nodes.end(); node_iterator++) {
+    if ((*node_iterator)->isDirectory()) {
+      continue;
     }
 
-    return 0;
+    filler(buf, (*node_iterator)->name().c_str(), NULL, 0);
+  }
+
+  return 0;
 }
 
 // https://fossies.org/dox/fuse-2.9.7/structfuse__operations.html#a08a085fceedd8770e3290a80aa9645ac
