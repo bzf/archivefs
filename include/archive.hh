@@ -13,6 +13,8 @@ class Archive {
   public:
     Archive(const std::string &path);
 
+    Node* get_node_for_path(const char *path);
+
     std::map<std::string, Node> _dict;
     archive *_archive = NULL;
 

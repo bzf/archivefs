@@ -37,6 +37,17 @@ Archive::Archive(const std::string &path)
     archive_read_free(_archive);
 }
 
+Node* Archive::get_node_for_path(const char* path) {
+  auto it = _dict.begin();
+  for (; it != _dict.end(); it++) {
+    if (path == it->first) {
+      return &(it->second);
+    }
+  }
+
+  return nullptr;
+};
+
 /* We can't have paths ending in `/` */
 std::string Archive::correct_path(const std::string &path) {
     char last_character = path[path.size() - 1];

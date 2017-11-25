@@ -10,19 +10,16 @@ static Archive *g_archive = nullptr;
 static int getattr_callback(const char *path, struct stat *stbuf) {
     memset(stbuf, 0, sizeof(struct stat));
 
-    auto it = g_archive->_dict.begin();
-    for (; it != g_archive->_dict.end(); it++) {
-        if (path == it->first) {
-            auto node = it->second;
-            stbuf->st_mode = (node.isDirectory() ? S_IFDIR : S_IFREG) | 0444;
-            stbuf->st_nlink = (int)node.isDirectory() + 1;
+    auto node = g_archive->get_node_for_path(path);
+    if (node != nullptr) {
+      stbuf->st_mode = (node->isDirectory() ? S_IFDIR : S_IFREG) | 0444;
+      stbuf->st_nlink = (int)node->isDirectory() + 1;
 
-            if (!node.isDirectory()) {
-                stbuf->st_size = node.size();
-            }
+      if (!node->isDirectory()) {
+        stbuf->st_size = node->size();
+      }
 
-            return 0;
-        }
+      return 0;
     }
 
     if (strcmp(path, "/") == 0) {
