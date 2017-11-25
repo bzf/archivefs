@@ -69,37 +69,33 @@ int readdir_callback(const char *path, void *buf, fuse_fill_dir_t filler, off_t,
 
 // https://fossies.org/dox/fuse-2.9.7/structfuse__operations.html#a08a085fceedd8770e3290a80aa9645ac
 int open_callback(const char *path, fuse_file_info *) {
-    auto it = g_archive->_dict.begin();
-    for (; it != g_archive->_dict.end(); it++) {
-        if (it->first == path) {
-            it->second.open();
-        }
-    }
+  auto node = g_archive->get_node_for_path(path);
+  if (node) {
+    node->open();
+  }
 
-    return 0;
+  return 0;
 }
 
 int read_callback(const char *path, char *buf, size_t size, off_t offset,
-                  fuse_file_info *) {
-    auto node = g_archive->get_node_for_path(path);
-    if (node) {
-      return node->write_to_buffer(buf, size, offset);
-    } else {
-      return -ENOENT;
-    }
+    fuse_file_info *) {
+  auto node = g_archive->get_node_for_path(path);
+  if (node) {
+    return node->write_to_buffer(buf, size, offset);
+  } else {
+    return -ENOENT;
+  }
 }
 
 int flush_callback(const char *, fuse_file_info *) { return 0; }
 
 int release_callback(const char *path, fuse_file_info *) {
-    auto it = g_archive->_dict.begin();
-    for (; it != g_archive->_dict.end(); it++) {
-        if (it->first == path) {
-            return it->second.close();
-        }
-    }
-
+  auto node = g_archive->get_node_for_path(path);
+  if (node) {
+    return node->close();
+  } else {
     return -ENOENT;
+  }
 }
 
 int statfs_callback(const char *, struct statvfs *) { return 0; }
