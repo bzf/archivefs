@@ -81,14 +81,12 @@ int open_callback(const char *path, fuse_file_info *) {
 
 int read_callback(const char *path, char *buf, size_t size, off_t offset,
                   fuse_file_info *) {
-    auto it = g_archive->_dict.begin();
-    for (; it != g_archive->_dict.end(); it++) {
-        if (it->first == path) {
-            return it->second.write_to_buffer(buf, size, offset);
-        }
+    auto node = g_archive->get_node_for_path(path);
+    if (node) {
+      return node->write_to_buffer(buf, size, offset);
+    } else {
+      return -ENOENT;
     }
-
-    return -ENOENT;
 }
 
 int flush_callback(const char *, fuse_file_info *) { return 0; }

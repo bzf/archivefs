@@ -2,6 +2,7 @@
 #define ARCHIVE_H_ value
 
 #include <map>
+#include <vector>
 
 #include <archive.h>
 #include <archive_entry.h>
