@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "archive.hh"
+#include "directory_archive.hh"
 
 static Archive *g_archive = nullptr;
 
@@ -96,10 +97,15 @@ int fgetattr_callback(const char *, struct stat *, struct fuse_file_info *) {
     return ENOENT;
 }
 
-typedef struct archivefs_conf { char *archive_path; } archivefs_conf;
+typedef struct archivefs_conf {
+  char *archive_path;
+  char *directory_path;
+} archivefs_conf;
 
 static struct fuse_opt archivefs_opts[] = {
-    {"--file=%s", offsetof(archivefs_conf, archive_path), 0}, FUSE_OPT_END,
+    {"--file=%s", offsetof(archivefs_conf, archive_path), 0},
+    {"--directory=%s", offsetof(archivefs_conf, directory_path), 0},
+    FUSE_OPT_END,
 };
 
 struct fuse_operations build_operations() {
@@ -127,11 +133,16 @@ int main(int argc, char **argv) {
     memset(&configuration, 0, sizeof(configuration));
     fuse_opt_parse(&args, &configuration, archivefs_opts, NULL);
 
-    if (configuration.archive_path == nullptr) {
-        std::cerr << "Need to set which archive you want to mount" << std::endl;
-        return 1;
+    if (configuration.archive_path == nullptr && configuration.directory_path == nullptr) {
+      std::cerr << "Need to set which archive you want to mount" << std::endl;
+      return 1;
     }
 
-    g_archive = new Archive(configuration.archive_path);
-    return fuse_main(args.argc, args.argv, &operations, NULL);
+    if (configuration.archive_path != nullptr) {
+      g_archive = new Archive(configuration.archive_path);
+      return fuse_main(args.argc, args.argv, &operations, NULL);
+    } else if (configuration.directory_path != nullptr) {
+      std::cout << configuration.directory_path << std::endl;
+      auto directory_archive = DirectoryArchive(configuration.directory_path);
+    }
 }
