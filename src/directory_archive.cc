@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <boost/filesystem.hpp>
+#include <cstring>
 
 #include <archive.h>
 #include <archive_entry.h>
@@ -49,8 +50,29 @@ DirectoryArchive::DirectoryArchive(const char *directory_path)
     std::cout << "DirectoryArchive::_dict.size(): " << _dict.size() << std::endl;
 }
 
-Node* 
-DirectoryArchive::get_node_for_path(const char *) {
+std::vector<std::string>
+DirectoryArchive::list_files_in_root() {
+  std::vector<std::string> vector;
+
+  auto it = _dict.begin();
+  for (; it != _dict.end(); it++) {
+    vector.push_back(it->first);
+  }
+
+  return vector;
+}
+
+Node*
+DirectoryArchive::get_node_for_path(const char *path) {
+  // If it's in the _dict as a key, return a node saying it's a directory
+  auto it = _dict.begin();
+  for (; it != _dict.end(); it++) {
+    if (strcmp(it->first.c_str(), (path + 1)) == 0) {
+      std::cout << "Exact match, return a directory node" << std::endl;
+      return new Node("", nullptr, it->first);
+    }
+  }
+
   return nullptr;
 }
 

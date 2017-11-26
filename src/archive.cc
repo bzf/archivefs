@@ -38,6 +38,12 @@ Archive::Archive(const std::string &path)
     archive_read_free(_archive);
 }
 
+std::vector<std::string>
+Archive::list_files_in_root() {
+  std::vector<std::string> vector;
+  return vector;
+}
+
 Node* Archive::get_node_for_path(const char* path) {
   auto it = _dict.begin();
   for (; it != _dict.end(); it++) {

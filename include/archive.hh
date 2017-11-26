@@ -15,6 +15,7 @@ class Archive : public ArchiveFacade {
   public:
     Archive(const std::string &path);
 
+    std::vector<std::string> list_files_in_root();
     Node* get_node_for_path(const char *path);
     std::vector<Node*> get_nodes_in_directory(const char *directory);
 

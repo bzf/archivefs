@@ -16,7 +16,7 @@ static int getattr_callback(const char *path, struct stat *stbuf) {
 
     auto node = g_archive->get_node_for_path(path);
     if (node != nullptr) {
-      stbuf->st_mode = (node->isDirectory() ? S_IFDIR : S_IFREG) | 0444;
+      stbuf->st_mode = (node->isDirectory() ? S_IFDIR : S_IFREG) | 0777;
       stbuf->st_nlink = (int)node->isDirectory() + 1;
 
       if (!node->isDirectory()) {
@@ -47,15 +47,26 @@ int readdir_callback(const char *directory_prefix, void *buf, fuse_fill_dir_t fi
 
   std::cout << "readdir_callback " << directory_prefix << std::endl;
 
-  auto nodes = g_archive->get_nodes_in_directory(directory_prefix);
+  if (strncmp(directory_prefix, "/", 1) == 0) {
+    std::cout << "readdir_callback - List the root" << std::endl;
+    auto names = g_archive->list_files_in_root();
 
-  auto node_iterator = nodes.begin();
-  for (; node_iterator != nodes.end(); node_iterator++) {
-    if ((*node_iterator)->isDirectory()) {
-      continue;
+    auto name_iterator = names.begin();
+    for (; name_iterator != names.end(); name_iterator++) {
+      std::cout << *name_iterator << std::endl;
+      filler(buf, name_iterator->c_str(), NULL, 0);
     }
+  } else {
+    auto nodes = g_archive->get_nodes_in_directory(directory_prefix);
 
-    filler(buf, (*node_iterator)->name().c_str(), NULL, 0);
+    auto node_iterator = nodes.begin();
+    for (; node_iterator != nodes.end(); node_iterator++) {
+      if ((*node_iterator)->isDirectory()) {
+        continue;
+      }
+
+      filler(buf, (*node_iterator)->name().c_str(), NULL, 0);
+    }
   }
 
   return 0;
