@@ -14,6 +14,14 @@ static int getattr_callback(const char *path, struct stat *stbuf) {
 
     std::cout << "getattr_callback " << path << std::endl;
 
+    /* auto name_iterator = names.begin(); */
+    /* for (; name_iterator != names.end(); name_iterator++) { */
+    /*   std::cout << *name_iterator << std::endl; */
+
+    /*   if (strcmp(name_iterator, path + 1) == 0) { */
+    /*   filler(buf, name_iterator->c_str(), NULL, 0); */
+    /* } */
+
     auto node = g_archive->get_node_for_path(path);
     if (node != nullptr) {
       stbuf->st_mode = (node->isDirectory() ? S_IFDIR : S_IFREG) | 0777;
@@ -47,7 +55,7 @@ int readdir_callback(const char *directory_prefix, void *buf, fuse_fill_dir_t fi
 
   std::cout << "readdir_callback " << directory_prefix << std::endl;
 
-  if (strncmp(directory_prefix, "/", 1) == 0) {
+  if (strcmp(directory_prefix, "/") == 0) {
     std::cout << "readdir_callback - List the root" << std::endl;
     auto names = g_archive->list_files_in_root();
 
@@ -74,8 +82,10 @@ int readdir_callback(const char *directory_prefix, void *buf, fuse_fill_dir_t fi
 
 // https://fossies.org/dox/fuse-2.9.7/structfuse__operations.html#a08a085fceedd8770e3290a80aa9645ac
 int open_callback(const char *path, fuse_file_info *) {
+  std::cout << "open_callback: " << path << std::endl;
   auto node = g_archive->get_node_for_path(path);
   if (node) {
+    std::cout << "open_callback: " << path << std::endl;
     node->open();
   }
 
@@ -84,6 +94,7 @@ int open_callback(const char *path, fuse_file_info *) {
 
 int read_callback(const char *path, char *buf, size_t size, off_t offset,
     fuse_file_info *) {
+  /* std::cout << "read_callback: " << path << std::endl; */
   auto node = g_archive->get_node_for_path(path);
   if (node) {
     return node->write_to_buffer(buf, size, offset);

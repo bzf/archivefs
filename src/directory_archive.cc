@@ -16,12 +16,13 @@ is_archive(const char *path) {
   archive_read_support_filter_all(archive);
   archive_read_support_format_all(archive);
 
-  if (archive_open_and_read_from_path(path, archive, 10240) == ARCHIVE_OK) {
-    archive_read_free(archive);
-    return true;
-  } else {
-    return false;
-  }
+  /* if (archive_open_and_read_from_path(path, archive, 10240) == ARCHIVE_OK) { */
+  std::string foo(path);
+  std::string::size_type rar_position = foo.find(".rar");
+  std::cout << "is_multipart_rar_file: " << foo << std::endl;
+  printf("rar at pos: %li\n", rar_position);
+
+  return rar_position != std::string::npos;
 }
 
 DirectoryArchive::DirectoryArchive(const char *directory_path)
@@ -67,9 +68,22 @@ DirectoryArchive::get_node_for_path(const char *path) {
   // If it's in the _dict as a key, return a node saying it's a directory
   auto it = _dict.begin();
   for (; it != _dict.end(); it++) {
-    if (strcmp(it->first.c_str(), (path + 1)) == 0) {
-      std::cout << "Exact match, return a directory node" << std::endl;
+    auto compare_index = strcmp(path, ("/" + it->first).c_str());
+    /* std::cout << "DirectoryArchive::get_node_for_path compare_index: " << compare_index << std::endl; */
+
+    if (compare_index == 0) {
+      /* std::cout << "Exact match, return a directory node" << std::endl; */
       return new Node("", nullptr, it->first);
+    }
+
+    // If it starts with something in the names, substring everything that
+    // matches and pass it to the `Archive`
+
+    if (compare_index > 0) {
+      /* std::cout << "get_node_for_path: found something that amtches path" << std::endl; */
+      /* std::cout << (path + compare_index - 5) << "\n" << std::endl; */
+      return it->second.get_node_for_path(path + compare_index - 5);
+      /* return new Node("", nullptr, it->first); */
     }
   }
 
@@ -77,7 +91,21 @@ DirectoryArchive::get_node_for_path(const char *path) {
 }
 
 std::vector<Node*>
-DirectoryArchive::get_nodes_in_directory(const char *) {
+DirectoryArchive::get_nodes_in_directory(const char *directory_path) {
+  std::cout << "DirectoryArchive::get_nodes_in_directory: " << directory_path << std::endl;
+
   std::vector<Node*> vector;
+  auto it = _dict.begin();
+  for (; it != _dict.end(); it++) {
+    auto compare_index = strcmp(it->first.c_str(), directory_path + 1);
+    std::cout << "compare_index: " << compare_index << std::endl;
+    if (compare_index == 0) {
+      /* it->second.get_nodes_in_directory( */
+      std::cout << "Exact match, return root in archive (it->second)" <<std::endl;
+      return it->second.get_nodes_in_directory("/");
+      /* std::cout << (directory_path + compare_index) <<std::endl; */
+    }
+  }
+
   return vector;
 }

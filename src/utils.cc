@@ -31,6 +31,7 @@ const std::string filename_without_rar_extension(const std::string &path) {
 
 bool is_multipart_rar_file(const std::string &path) {
     std::string::size_type rar_position = path.find(".rar");
+    std::cout << "is_multipart_rar_file: " << path << std::endl;
     printf("rar at pos: %li\n", rar_position);
 
     if (rar_position == std::string::npos) {
