@@ -12,6 +12,8 @@ static ArchiveFacade *g_archive = nullptr;
 static int getattr_callback(const char *path, struct stat *stbuf) {
     memset(stbuf, 0, sizeof(struct stat));
 
+    std::cout << "getattr_callback " << path << std::endl;
+
     auto node = g_archive->get_node_for_path(path);
     if (node != nullptr) {
       stbuf->st_mode = (node->isDirectory() ? S_IFDIR : S_IFREG) | 0444;
@@ -42,6 +44,8 @@ int readdir_callback(const char *directory_prefix, void *buf, fuse_fill_dir_t fi
     struct fuse_file_info *) {
   filler(buf, ".", NULL, 0);
   filler(buf, "..", NULL, 0);
+
+  std::cout << "readdir_callback " << directory_prefix << std::endl;
 
   auto nodes = g_archive->get_nodes_in_directory(directory_prefix);
 
@@ -145,5 +149,7 @@ int main(int argc, char **argv) {
     } else if (configuration.directory_path != nullptr) {
       std::cout << configuration.directory_path << std::endl;
       auto directory_archive = DirectoryArchive(configuration.directory_path);
+      g_archive = new DirectoryArchive(configuration.directory_path);
+      return fuse_main(args.argc, args.argv, &operations, NULL);
     }
 }

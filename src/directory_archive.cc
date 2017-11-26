@@ -48,3 +48,14 @@ DirectoryArchive::DirectoryArchive(const char *directory_path)
 
     std::cout << "DirectoryArchive::_dict.size(): " << _dict.size() << std::endl;
 }
+
+Node* 
+DirectoryArchive::get_node_for_path(const char *) {
+  return nullptr;
+}
+
+std::vector<Node*>
+DirectoryArchive::get_nodes_in_directory(const char *) {
+  std::vector<Node*> vector;
+  return vector;
+}
