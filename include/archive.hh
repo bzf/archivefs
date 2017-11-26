@@ -8,9 +8,10 @@
 #include <archive_entry.h>
 #include <errno.h>
 
+#include "archive_facade.hh"
 #include "node.hh"
 
-class Archive {
+class Archive : public ArchiveFacade {
   public:
     Archive(const std::string &path);
 

@@ -3,10 +3,11 @@
 #include <fuse.h>
 #include <string.h>
 
+#include "archive_facade.hh"
 #include "archive.hh"
 #include "directory_archive.hh"
 
-static Archive *g_archive = nullptr;
+static ArchiveFacade *g_archive = nullptr;
 
 static int getattr_callback(const char *path, struct stat *stbuf) {
     memset(stbuf, 0, sizeof(struct stat));
