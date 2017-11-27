@@ -41,6 +41,14 @@ Archive::Archive(const std::string &path)
 std::vector<std::string>
 Archive::list_files_in_root() {
   std::vector<std::string> vector;
+
+  auto it = _dict.begin();
+  for (; it != _dict.end(); it++) {
+    std::string name = it->first;
+    name.replace(0, 1, "");
+    vector.push_back(name);
+  }
+
   return vector;
 }
 

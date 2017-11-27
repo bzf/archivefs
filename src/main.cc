@@ -35,6 +35,7 @@ static int getattr_callback(const char *path, struct stat *stbuf) {
     }
 
     if (strcmp(path, "/") == 0) {
+      std::cout << "ROOT" << std::endl;
         stbuf->st_mode = S_IFDIR | 0755;
         stbuf->st_nlink = 2;
         return 0;
