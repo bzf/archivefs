@@ -3,8 +3,8 @@
 #include <fuse.h>
 #include <string.h>
 
-#include "archive_facade.hh"
 #include "archive.hh"
+#include "archive_facade.hh"
 #include "directory_archive.hh"
 
 static ArchiveFacade *g_archive = nullptr;
@@ -14,14 +14,14 @@ static int getattr_callback(const char *path, struct stat *stbuf) {
 
     auto node = g_archive->get_node_for_path(path);
     if (node != nullptr) {
-      stbuf->st_mode = (node->isDirectory() ? S_IFDIR : S_IFREG) | 0777;
-      stbuf->st_nlink = (int)node->isDirectory() + 1;
+        stbuf->st_mode = (node->isDirectory() ? S_IFDIR : S_IFREG) | 0777;
+        stbuf->st_nlink = (int)node->isDirectory() + 1;
 
-      if (!node->isDirectory()) {
-        stbuf->st_size = node->size();
-      }
+        if (!node->isDirectory()) {
+            stbuf->st_size = node->size();
+        }
 
-      return 0;
+        return 0;
     }
 
     if (strcmp(path, "/") == 0) {
@@ -38,63 +38,63 @@ int getxattr_callback(const char *, const char *, char *, size_t, uint32_t) {
     return ENODATA;
 }
 
-int readdir_callback(const char *directory_prefix, void *buf, fuse_fill_dir_t filler, off_t,
-    struct fuse_file_info *) {
-  filler(buf, ".", NULL, 0);
-  filler(buf, "..", NULL, 0);
+int readdir_callback(const char *directory_prefix, void *buf,
+                     fuse_fill_dir_t filler, off_t, struct fuse_file_info *) {
+    filler(buf, ".", NULL, 0);
+    filler(buf, "..", NULL, 0);
 
-  if (strcmp(directory_prefix, "/") == 0) {
-    auto names = g_archive->list_files_in_root();
+    if (strcmp(directory_prefix, "/") == 0) {
+        auto names = g_archive->list_files_in_root();
 
-    auto name_iterator = names.begin();
-    for (; name_iterator != names.end(); name_iterator++) {
-      filler(buf, name_iterator->c_str(), NULL, 0);
+        auto name_iterator = names.begin();
+        for (; name_iterator != names.end(); name_iterator++) {
+            filler(buf, name_iterator->c_str(), NULL, 0);
+        }
+    } else {
+        auto nodes = g_archive->get_nodes_in_directory(directory_prefix);
+
+        auto node_iterator = nodes.begin();
+        for (; node_iterator != nodes.end(); node_iterator++) {
+            if ((*node_iterator)->isDirectory()) {
+                continue;
+            }
+
+            filler(buf, (*node_iterator)->name().c_str(), NULL, 0);
+        }
     }
-  } else {
-    auto nodes = g_archive->get_nodes_in_directory(directory_prefix);
 
-    auto node_iterator = nodes.begin();
-    for (; node_iterator != nodes.end(); node_iterator++) {
-      if ((*node_iterator)->isDirectory()) {
-        continue;
-      }
-
-      filler(buf, (*node_iterator)->name().c_str(), NULL, 0);
-    }
-  }
-
-  return 0;
+    return 0;
 }
 
 // https://fossies.org/dox/fuse-2.9.7/structfuse__operations.html#a08a085fceedd8770e3290a80aa9645ac
 int open_callback(const char *path, fuse_file_info *) {
-  auto node = g_archive->get_node_for_path(path);
-  if (node) {
-    node->open();
-  }
+    auto node = g_archive->get_node_for_path(path);
+    if (node) {
+        node->open();
+    }
 
-  return 0;
+    return 0;
 }
 
 int read_callback(const char *path, char *buf, size_t size, off_t offset,
-    fuse_file_info *) {
-  auto node = g_archive->get_node_for_path(path);
-  if (node) {
-    return node->write_to_buffer(buf, size, offset);
-  } else {
-    return -ENOENT;
-  }
+                  fuse_file_info *) {
+    auto node = g_archive->get_node_for_path(path);
+    if (node) {
+        return node->write_to_buffer(buf, size, offset);
+    } else {
+        return -ENOENT;
+    }
 }
 
 int flush_callback(const char *, fuse_file_info *) { return 0; }
 
 int release_callback(const char *path, fuse_file_info *) {
-  auto node = g_archive->get_node_for_path(path);
-  if (node) {
-    return node->close();
-  } else {
-    return -ENOENT;
-  }
+    auto node = g_archive->get_node_for_path(path);
+    if (node) {
+        return node->close();
+    } else {
+        return -ENOENT;
+    }
 }
 
 int statfs_callback(const char *, struct statvfs *) { return 0; }
@@ -108,8 +108,8 @@ int fgetattr_callback(const char *, struct stat *, struct fuse_file_info *) {
 }
 
 typedef struct archivefs_conf {
-  char *archive_path;
-  char *directory_path;
+    char *archive_path;
+    char *directory_path;
 } archivefs_conf;
 
 static struct fuse_opt archivefs_opts[] = {
@@ -143,15 +143,16 @@ int main(int argc, char **argv) {
     memset(&configuration, 0, sizeof(configuration));
     fuse_opt_parse(&args, &configuration, archivefs_opts, NULL);
 
-    if (configuration.archive_path == nullptr && configuration.directory_path == nullptr) {
-      std::cerr << "Need to set which archive you want to mount" << std::endl;
-      return 1;
+    if (configuration.archive_path == nullptr &&
+        configuration.directory_path == nullptr) {
+        std::cerr << "Need to set which archive you want to mount" << std::endl;
+        return 1;
     }
 
     if (configuration.archive_path != nullptr) {
-      g_archive = new Archive(configuration.archive_path);
+        g_archive = new Archive(configuration.archive_path);
     } else if (configuration.directory_path != nullptr) {
-      g_archive = new DirectoryArchive(configuration.directory_path);
+        g_archive = new DirectoryArchive(configuration.directory_path);
     }
 
     return fuse_main(args.argc, args.argv, &operations, NULL);

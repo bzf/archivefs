@@ -37,62 +37,64 @@ Archive::Archive(const std::string &path)
     archive_read_free(_archive);
 }
 
-std::vector<std::string>
-Archive::list_files_in_root() {
-  std::vector<std::string> vector;
+std::vector<std::string> Archive::list_files_in_root() {
+    std::vector<std::string> vector;
 
-  auto it = _dict.begin();
-  for (; it != _dict.end(); it++) {
-    std::string name = it->first;
-    name.replace(0, 1, "");
-    vector.push_back(name);
-  }
+    auto it = _dict.begin();
+    for (; it != _dict.end(); it++) {
+        std::string name = it->first;
+        name.replace(0, 1, "");
+        vector.push_back(name);
+    }
 
-  return vector;
+    return vector;
 }
 
-Node* Archive::get_node_for_path(const char* path) {
-  auto it = _dict.begin();
-  for (; it != _dict.end(); it++) {
-    if (path == it->first) {
-      return &(it->second);
+Node *Archive::get_node_for_path(const char *path) {
+    auto it = _dict.begin();
+    for (; it != _dict.end(); it++) {
+        if (path == it->first) {
+            return &(it->second);
+        }
     }
-  }
 
-  return nullptr;
+    return nullptr;
 };
 
-std::vector<Node*>
+std::vector<Node *>
 Archive::get_nodes_in_directory(const char *directory_prefix) {
-  std::vector<Node*> vector;
+    std::vector<Node *> vector;
 
-  auto it = _dict.begin();
-  for (; it != _dict.end(); it++) {
-    // If the path of the it->first is longer than the directory_prefix, it
-    // can't be that node we're looking for
-    if (it->first.length() <= strlen(directory_prefix)) {
-      continue;
+    auto it = _dict.begin();
+    for (; it != _dict.end(); it++) {
+        // If the path of the it->first is longer than the directory_prefix, it
+        // can't be that node we're looking for
+        if (it->first.length() <= strlen(directory_prefix)) {
+            continue;
+        }
+
+        std::string compare_path =
+            it->first.substr(0, strlen(directory_prefix) - 1);
+        if (compare_path.c_str(), directory_prefix) {
+            // If it contains a `/`, it's a subdir so a no go
+            std::string path_without_directory_prefix = it->first.substr(
+                strlen(directory_prefix), it->first.length() - 1);
+
+            // Remove any leading slashes
+            if (path_without_directory_prefix[0] == '/') {
+                path_without_directory_prefix =
+                    path_without_directory_prefix.substr(
+                        1, path_without_directory_prefix.length() - 1);
+            }
+
+            // If the folder doesn't end on "/", show it in the directory
+            if (path_without_directory_prefix.find("/") == std::string::npos) {
+                vector.push_back(&(it->second));
+            }
+        }
     }
 
-    std::string compare_path = it->first.substr(0, strlen(directory_prefix) - 1);
-    if (compare_path.c_str(), directory_prefix) {
-      // If it contains a `/`, it's a subdir so a no go
-      std::string path_without_directory_prefix =
-        it->first.substr(strlen(directory_prefix), it->first.length() - 1);
-
-      // Remove any leading slashes
-      if (path_without_directory_prefix[0] == '/') {
-        path_without_directory_prefix = path_without_directory_prefix.substr(1, path_without_directory_prefix.length() - 1);
-      }
-
-      // If the folder doesn't end on "/", show it in the directory
-      if (path_without_directory_prefix.find("/") == std::string::npos) {
-        vector.push_back(&(it->second));
-      }
-    }
-  }
-
-  return vector;
+    return vector;
 }
 
 /* We can't have paths ending in `/` */
