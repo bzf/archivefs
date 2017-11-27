@@ -64,26 +64,41 @@ DirectoryArchive::list_files_in_root() {
 }
 
 Node*
-DirectoryArchive::get_node_for_path(const char *path) {
+DirectoryArchive::get_node_for_path(const char *c_path) {
+  std::string path(c_path);
+
   // If it's in the _dict as a key, return a node saying it's a directory
   auto it = _dict.begin();
   for (; it != _dict.end(); it++) {
-    auto compare_index = strcmp(path, ("/" + it->first).c_str());
+    /* auto compare_index = strcmp(path, ("/" + it->first).c_str()); */
     /* std::cout << "DirectoryArchive::get_node_for_path compare_index: " << compare_index << std::endl; */
 
-    if (compare_index == 0) {
+    std::cout << "\n" << path << " == " << ("/" + it->first) << std::endl;
+    std::cout << path.compare("/" + it->first) << std::endl;
+
+    if (path.compare("/" + it->first) == 0) {
+      std::cout << "RETURNING ROOT THINGY" << std::endl;
       /* std::cout << "Exact match, return a directory node" << std::endl; */
-      return new Node("", nullptr, it->first);
+      return new Node("", nullptr, path);
     }
 
     // If it starts with something in the names, substring everything that
     // matches and pass it to the `Archive`
+    /* std::cout << "--- " << path << std::endl; */
+    /* std::cout << "--- " << (path + compare_index) << std::endl; */
+    /* std::cout << "--- " << compare_index << std::endl; */
+    std::cout << path << " == " << ("/" + it->first) << std::endl;
+    std::cout << path.compare("/" + it->first) << std::endl;
 
-    if (compare_index > 0) {
-      /* std::cout << "get_node_for_path: found something that amtches path" << std::endl; */
-      /* std::cout << (path + compare_index - 5) << "\n" << std::endl; */
-      return it->second.get_node_for_path(path + compare_index - 5);
-      /* return new Node("", nullptr, it->first); */
+    if (path.compare("/" + it->first) == 1) {
+      std::cout << "MATCHING SUBPATH" << std::endl;
+      std::string subpath = path;
+      subpath.replace(0, it->first.length() + 1, "");
+      /* std::string subpath(path.replace()); */
+      std::cout << "!!! FULL PATH: " << path << std::endl;
+      std::cout << "!!!  SUB PATH: " << subpath << std::endl;
+
+      return it->second.get_node_for_path(subpath.c_str());
     }
   }
 

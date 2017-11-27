@@ -45,6 +45,7 @@ Archive::list_files_in_root() {
 }
 
 Node* Archive::get_node_for_path(const char* path) {
+  std::cout << "Archive::get_node_for_path: " << path << std::endl;
   /* std::cout << "Archive::get_node_for_path: " << path << std::endl; */
   auto it = _dict.begin();
   for (; it != _dict.end(); it++) {
