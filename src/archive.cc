@@ -26,7 +26,6 @@ Archive::Archive(const std::string &path)
     while (archive_read_next_header(_archive, &entry) == ARCHIVE_OK) {
         const std::string pathname = archive_entry_pathname(entry);
         auto ptr = archive_entry_clone(entry);
-        std::cout << "pathname: " << pathname << std::endl;
         Node node = Node(path, ptr, pathname);
 
         _dict.insert({"/" + correct_path(pathname), node});
@@ -35,7 +34,7 @@ Archive::Archive(const std::string &path)
     }
 
     std::cerr << "[archive] freeing!" << std::endl;
-    /* archive_read_free(_archive); */
+    archive_read_free(_archive);
 }
 
 std::vector<std::string>
@@ -53,12 +52,9 @@ Archive::list_files_in_root() {
 }
 
 Node* Archive::get_node_for_path(const char* path) {
-  std::cout << "Archive::get_node_for_path: " << path << std::endl;
-  /* std::cout << "Archive::get_node_for_path: " << path << std::endl; */
   auto it = _dict.begin();
   for (; it != _dict.end(); it++) {
     if (path == it->first) {
-      /* std::cout << "Archive::get_node_for_path: MATCH!" << std::endl; */
       return &(it->second);
     }
   }

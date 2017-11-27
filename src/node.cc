@@ -8,16 +8,15 @@
 
 Node::Node(const std::string archive_path, archive_entry *entry,
            const std::string name, size_t buffer_size)
-    : _archive_path(archive_path), _entry(entry), _name(name), _buffer_size(buffer_size) {
-      std::cout << "Creating node with archive_path " << archive_path << std::endl;
-    }
+    : _archive_path(archive_path), _entry(entry), _name(name),
+      _buffer_size(buffer_size) {}
 
 bool Node::isDirectory() {
-  if (_entry == nullptr) {
-    return true;
-  } else {
-    return (archive_entry_filetype(_entry) == 16384);
-  }
+    if (_entry == nullptr) {
+        return true;
+    } else {
+        return (archive_entry_filetype(_entry) == 16384);
+    }
 }
 
 int64_t Node::size() { return archive_entry_size(_entry); }
