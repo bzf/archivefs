@@ -4,3 +4,7 @@ version = "0.1.0"
 authors = ["André Ligné <hello@bzf.se>"]
 
 [dependencies]
+
+[lib]
+name = "archivefs"
+crate-type = ["dylib"]
