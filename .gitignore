@@ -2,3 +2,6 @@
 archivefs
 *.o
 examples/
+/target/
+**/*.rs.bk
+Cargo.lock
