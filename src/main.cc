@@ -6,6 +6,7 @@
 #include "archive.hh"
 #include "archive_facade.hh"
 #include "directory_archive.hh"
+#include "libarchivefs.hh"
 
 static ArchiveFacade *g_archive = nullptr;
 
@@ -142,6 +143,9 @@ int main(int argc, char **argv) {
     archivefs_conf configuration;
     memset(&configuration, 0, sizeof(configuration));
     fuse_opt_parse(&args, &configuration, archivefs_opts, NULL);
+
+    tell_me_things_rust();
+    return 1;
 
     if (configuration.archive_path == nullptr &&
         configuration.directory_path == nullptr) {
