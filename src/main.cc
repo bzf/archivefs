@@ -144,9 +144,6 @@ int main(int argc, char **argv) {
     memset(&configuration, 0, sizeof(configuration));
     fuse_opt_parse(&args, &configuration, archivefs_opts, NULL);
 
-    tell_me_things_rust();
-    return 1;
-
     if (configuration.archive_path == nullptr &&
         configuration.directory_path == nullptr) {
         std::cerr << "Need to set which archive you want to mount" << std::endl;

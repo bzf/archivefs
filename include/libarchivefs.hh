@@ -1,6 +1,6 @@
 #ifndef LIBARCHIVEFS_H_
 #define LIBARCHIVEFS_H_ value
 
-extern "C" void tell_me_things_rust();
+extern "C" const char *archivefs_correct_path(const char *path);
 
 #endif /* ifndef LIBARCHIVEFS_H_ */

@@ -1,5 +1,6 @@
 #include "archive.hh"
 
+#include "libarchivefs.hh"
 #include "utils.hh"
 
 #include <algorithm>
@@ -98,11 +99,7 @@ Archive::get_nodes_in_directory(const char *directory_prefix) {
 }
 
 /* We can't have paths ending in `/` */
-std::string Archive::correct_path(const std::string &path) {
-    char last_character = path[path.size() - 1];
-    if (last_character == '/') {
-        return path.substr(0, path.size() - 1);
-    } else {
-        return path;
-    }
+std::string Archive::correct_path(const std::string path) {
+    const char *pointer = path.c_str();
+    return archivefs_correct_path(pointer);
 }
