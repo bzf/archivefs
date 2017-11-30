@@ -5,12 +5,15 @@ CFLAGS_OSXFUSE += -D_FILE_OFFSET_BITS=64
 CFLAGS_OSXFUSE += -D_DARWIN_USE_64_BIT_INODE
 
 CFLAGS = -Wall -Wextra -Werror -std=c++11 -fdiagnostics-color=auto -Iinclude -I/usr/local/include -I/usr/local/opt/libarchive/include
-LDFLAGS = -Ltarget/debug/ -larchivefs -losxfuse -larchive -lboost_system -lboost_filesystem -g
+LDFLAGS = -losxfuse -larchive -lboost_system -lboost_filesystem
 
 all: archivefs
 
 archivefs: src/main.cc node arc darc utils libarchivefs | create_build_directory
-	g++ src/main.cc build/*.o -o archivefs $(LDFLAGS) $(CFLAGS) -D_FILE_OFFSET_BITS=64 -L/usr/local/opt/libarchive/lib -L/usr/local/lib $(CFLAGS_OSXFUSE) 
+	g++ -D_FILE_OFFSET_BITS=64 -L/usr/local/opt/libarchive/lib -L/usr/local/lib \
+		src/main.cc build/*.o -o archivefs \
+		$(CFLAGS_OSXFUSE) $(LDFLAGS) $(CFLAGS) \
+		-L./target/release/ -larchivefs
 
 node: src/node.cc include/node.hh | create_build_directory
 	g++ src/node.cc -c -o build/node.o $(CFLAGS) -D_FILE_OFFSET_BITS=64
@@ -27,8 +30,9 @@ utils: src/utils.cc include/utils.hh | create_build_directory
 create_build_directory:
 	mkdir -p build/
 
-libarchivefs: src/ Cargo.toml
-	cargo build
+libarchivefs: src/lib.rs Cargo.toml
+	cargo build --release
 
 clean:
 	rm -rf build/ archivefs
+	cargo clean
