@@ -25,7 +25,7 @@ class Archive : public ArchiveFacade {
   private:
     const std::string _archive_path;
 
-    std::string correct_path(const std::string &path);
+    std::string correct_path(const std::string path);
 };
 
 #endif /* ifndef ARCHIVE_H_ */
