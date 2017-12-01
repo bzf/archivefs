@@ -1,5 +1,7 @@
 #include "utils.hh"
 
+#include "libarchivefs.hh"
+
 #include <algorithm>
 #include <cstring>
 #include <iomanip>
@@ -20,13 +22,9 @@ bool does_file_exist(const std::string &path) {
     return (stat(path.c_str(), &buffer) == 0);
 }
 
-const std::string filename_without_rar_extension(const std::string &path) {
-    std::string::size_type rar_position = path.find(".rar");
-    if (rar_position == std::string::npos) {
-        return path;
-    } else {
-        return path.substr(0, rar_position);
-    }
+std::string filename_without_rar_extension(const std::string path) {
+    const char *pointer = path.c_str();
+    return archivefs_filename_without_extension(pointer, ".rar");
 }
 
 bool is_multipart_rar_file(const std::string &path) {

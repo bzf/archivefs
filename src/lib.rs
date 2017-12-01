@@ -35,3 +35,44 @@ pub extern "C" fn archivefs_correct_path(raw_path: *mut c_char) -> *mut c_char {
 
     return c_result.into_raw();
 }
+
+#[test]
+fn filename_without_rar_extension_works() {
+    let filename = String::from("foobar.rar");
+    let extension = String::from(".rar");
+    assert_eq!(
+        filename_without_extension(filename, &extension),
+        String::from("foobar")
+    );
+
+    let filename = String::from("foobar.zip");
+    assert_eq!(
+        filename_without_extension(filename, &extension),
+        String::from("foobar.zip")
+    );
+}
+
+fn filename_without_extension(filename: String, extension: &str) -> String {
+    return filename.replace(extension, "");
+}
+
+#[no_mangle]
+pub extern "C" fn archivefs_filename_without_extension(
+    filename: *mut c_char,
+    extension: *mut c_char,
+) -> *mut c_char {
+    let c_filename: CString = unsafe { CString::from_raw(filename) };
+    let c_extension: CString = unsafe { CString::from_raw(extension) };
+
+    let filename: String = c_filename.clone().into_string().unwrap();
+    let extension: String = c_extension.clone().into_string().unwrap();
+    let filename_without_extension: String = filename_without_extension(filename, &extension);
+    let c_result: CString =
+        unsafe { CString::from_vec_unchecked(filename_without_extension.into_bytes()) };
+
+    // Release ownership of the variables
+    c_filename.into_raw();
+    c_extension.into_raw();
+
+    return c_result.into_raw();
+}
