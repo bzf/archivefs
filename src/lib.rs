@@ -35,3 +35,16 @@ pub extern "C" fn archivefs_filename_without_extension(
 
     return c_result.into_raw();
 }
+
+#[no_mangle]
+pub extern "C" fn archivefs_is_multipart_rar_file(path: *mut c_char) -> bool {
+    let c_path: CString = unsafe { CString::from_raw(path) };
+
+    let path: String = c_path.clone().into_string().unwrap();
+    let result = utils::is_multipart_rar_file(path);
+
+    // Release the path pointer
+    c_path.into_raw();
+
+    return result;
+}

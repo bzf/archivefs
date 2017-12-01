@@ -20,6 +20,6 @@ int archive_open_and_read_from_path(const std::string &path, archive *archive,
 char *convert(const std::string &s);
 bool does_file_exist(const std::string &path);
 std::string filename_without_rar_extension(const std::string path);
-bool is_multipart_rar_file(const std::string &path);
+bool is_multipart_rar_file(const std::string path);
 
 #endif /* ifndef UTILS_H */

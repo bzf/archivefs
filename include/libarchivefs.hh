@@ -6,4 +6,6 @@ extern "C" const char *archivefs_correct_path(const char *path);
 extern "C" const char *
 archivefs_filename_without_extension(const char *path, const char *extension);
 
+extern "C" bool archivefs_is_multipart_rar_file(const char *path);
+
 #endif /* ifndef LIBARCHIVEFS_H_ */

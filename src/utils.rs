@@ -43,3 +43,14 @@ fn filename_without_rar_extension_works() {
 pub fn filename_without_extension(filename: String, extension: &str) -> String {
     return filename.replace(extension, "");
 }
+
+pub fn is_multipart_rar_file(path: String) -> bool {
+    if !path.ends_with(".rar") {
+        return false;
+    }
+
+    let mut filename = filename_without_extension(path, ".rar");
+    filename.push_str(".r01");
+
+    return Path::new(&filename).exists();
+}

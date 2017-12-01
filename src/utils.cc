@@ -27,25 +27,9 @@ std::string filename_without_rar_extension(const std::string path) {
     return archivefs_filename_without_extension(pointer, ".rar");
 }
 
-bool is_multipart_rar_file(const std::string &path) {
-    std::string::size_type rar_position = path.find(".rar");
-    std::cout << "is_multipart_rar_file: " << path << std::endl;
-    printf("rar at pos: %li\n", rar_position);
-
-    if (rar_position == std::string::npos) {
-        printf("not a rar file\n");
-        return false;
-    }
-
-    std::string filename_without_extension =
-        filename_without_rar_extension(path);
-    std::cout << filename_without_extension << std::endl;
-
-    if (does_file_exist(filename_without_extension + ".r01")) {
-        return true;
-    }
-
-    return false;
+bool is_multipart_rar_file(const std::string path) {
+    const char *pointer = path.c_str();
+    return archivefs_is_multipart_rar_file(pointer);
 }
 
 int archive_open_and_read_from_path(const std::string &path, archive *archive,
