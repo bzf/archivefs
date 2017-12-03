@@ -16,4 +16,6 @@ extern "C" void *archivefs_new_node(const char *path,
 
 extern "C" bool archivefs_node_is_directory(void *archivefs_node);
 
+extern "C" int64_t archivefs_node_size(void *archivefs_node);
+
 #endif /* ifndef LIBARCHIVEFS_H_ */

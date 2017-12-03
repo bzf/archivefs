@@ -83,3 +83,8 @@ pub extern "C" fn archivefs_node_is_directory(node: *mut Node) -> bool {
         return unsafe { (*node).is_directory() };
     }
 }
+
+#[no_mangle]
+pub extern "C" fn archivefs_node_size(node: *mut Node) -> libc::int64_t {
+    return unsafe { (*node).size() };
+}

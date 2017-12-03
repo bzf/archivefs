@@ -7,6 +7,7 @@ enum ArchiveEntry {}
 #[link(name = "archive")]
 extern "C" {
     fn archive_entry_filetype(_: *mut ArchiveEntry) -> libc::mode_t;
+    fn archive_entry_size(_: *mut ArchiveEntry) -> i64;
 }
 
 pub struct Node {
@@ -34,5 +35,9 @@ impl Node {
         } else {
             return unsafe { archive_entry_filetype(self.entry) == 16384 };
         }
+    }
+
+    pub fn size(&self) -> i64 {
+        return unsafe { archive_entry_size(self.entry) };
     }
 }
