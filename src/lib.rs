@@ -1,7 +1,12 @@
-use std::ffi::CString;
-use std::os::raw::c_char;
+extern crate libc;
 
 mod utils;
+mod node;
+
+use std::boxed::Box;
+use std::ffi::CString;
+use std::os::raw::{c_char, c_void};
+use node::Node;
 
 #[no_mangle]
 pub extern "C" fn archivefs_correct_path(raw_path: *mut c_char) -> *mut c_char {
@@ -47,4 +52,34 @@ pub extern "C" fn archivefs_is_multipart_rar_file(path: *mut c_char) -> bool {
     c_path.into_raw();
 
     return result;
+}
+
+#[no_mangle]
+pub extern "C" fn archivefs_new_node(
+    path: *mut c_char,
+    entry: *mut c_void,
+    name: *mut c_char,
+    buffer_size: libc::size_t,
+) -> *mut Node {
+    let path: CString = unsafe { CString::from_raw(path) };
+    let path: String = path.into_string().unwrap();
+
+    let name: CString = unsafe { CString::from_raw(name) };
+    let name: String = name.into_string().unwrap();
+
+    let node: Node = Node::new(path, entry, name, buffer_size);
+
+    let node_box = Box::new(node);
+    let ptr: *mut node::Node = Box::into_raw(node_box);
+
+    return ptr;
+}
+
+#[no_mangle]
+pub extern "C" fn archivefs_node_is_directory(node: *mut Node) -> bool {
+    if node.is_null() {
+        return true;
+    } else {
+        return unsafe { (*node).is_directory() };
+    }
 }

@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["André Ligné <hello@bzf.se>"]
 
 [dependencies]
+libc = "0.2"
 
 [lib]
 name = "archivefs"

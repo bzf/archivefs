@@ -29,6 +29,8 @@ class Node {
     char *_buffer = nullptr;
     const std::string _name;
     const size_t _buffer_size;
+
+    void *_node = nullptr;
 };
 
 #endif /* ifndef NODE_H_ */
