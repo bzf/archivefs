@@ -4,7 +4,7 @@ mod utils;
 mod node;
 
 use std::boxed::Box;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_void};
 use node::Node;
 
@@ -87,4 +87,14 @@ pub extern "C" fn archivefs_node_is_directory(node: *mut Node) -> bool {
 #[no_mangle]
 pub extern "C" fn archivefs_node_size(node: *mut Node) -> libc::int64_t {
     return unsafe { (*node).size() };
+}
+
+#[no_mangle]
+pub fn archivefs_does_file_exist(ptr: *const c_char) -> bool {
+    let path = unsafe { CStr::from_ptr(ptr) };
+
+    let path: &str = path.to_str().unwrap();
+    let result: bool = utils::does_file_exist(&path);
+
+    return result;
 }

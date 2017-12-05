@@ -1,5 +1,7 @@
 use std::path::Path;
 
+enum ArchiveEntry {}
+
 #[test]
 fn correct_path_removes_trailing_slashes() {
     let broken = String::from("/usr/local/bin/");
@@ -53,4 +55,8 @@ pub fn is_multipart_rar_file(path: String) -> bool {
     filename.push_str(".r01");
 
     return Path::new(&filename).exists();
+}
+
+pub fn does_file_exist(path: &str) -> bool {
+    return Path::new(path).exists();
 }

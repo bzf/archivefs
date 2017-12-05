@@ -18,4 +18,6 @@ extern "C" bool archivefs_node_is_directory(void *archivefs_node);
 
 extern "C" int64_t archivefs_node_size(void *archivefs_node);
 
+extern "C" bool archivefs_does_file_exist(const char *path);
+
 #endif /* ifndef LIBARCHIVEFS_H_ */

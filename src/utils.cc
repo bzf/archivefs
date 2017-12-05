@@ -18,8 +18,8 @@ char *convert(const std::string &s) {
 }
 
 bool does_file_exist(const std::string &path) {
-    struct stat buffer;
-    return (stat(path.c_str(), &buffer) == 0);
+    auto pointer = path.c_str();
+    return archivefs_does_file_exist(pointer);
 }
 
 std::string filename_without_rar_extension(const std::string path) {
