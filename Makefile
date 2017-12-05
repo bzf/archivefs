@@ -4,7 +4,7 @@ CFLAGS_OSXFUSE += -DFUSE_USE_VERSION=26
 CFLAGS_OSXFUSE += -D_FILE_OFFSET_BITS=64
 CFLAGS_OSXFUSE += -D_DARWIN_USE_64_BIT_INODE
 
-CFLAGS = -Wall -Wextra -Werror -std=c++11 -fdiagnostics-color=auto -Iinclude -I/usr/local/include -I/usr/local/opt/libarchive/include
+CFLAGS = -Wall -Wextra -Werror -std=c++11 -Iinclude -I/usr/local/include -I/usr/local/opt/libarchive/include
 LDFLAGS = -losxfuse -larchive -lboost_system -lboost_filesystem
 
 all: archivefs
