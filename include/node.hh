@@ -22,13 +22,7 @@ class Node {
     int close();
 
   private:
-    const std::string _archive_path;
-    archive_entry *_entry;
-
-    archive *_archive = nullptr;
     const std::string _name;
-    const size_t _buffer_size;
-
     void *_node = nullptr;
 };
 

@@ -46,6 +46,8 @@ extern "C" {
         filenames: *mut (*mut c_char),
         block_size: libc::size_t,
     ) -> i64;
+
+    fn archive_read_free(_: *mut Archive) -> i64;
 }
 
 pub struct Node {
@@ -86,10 +88,6 @@ impl Node {
             return;
         }
 
-        /* if (_archive != nullptr) { */
-        /*     return; */
-        /* } */
-
         let archive: *mut Archive = unsafe { archive_read_new() };
         unsafe { archive_read_support_filter_all(archive) };
         unsafe { archive_read_support_format_all(archive) };
@@ -125,6 +123,16 @@ impl Node {
             return bytes_written as size_t;
         } else {
             panic!("Must open archive before writing from it");
+        }
+    }
+
+    pub fn close(&mut self) -> i64 {
+        if let Some(archive) = self.archive {
+            let result = unsafe { archive_read_free(archive) };
+            self.archive = None;
+            return result;
+        } else {
+            return -1;
         }
     }
 }

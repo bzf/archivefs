@@ -105,6 +105,11 @@ pub extern "C" fn archivefs_node_open(node: *mut Node) {
 }
 
 #[no_mangle]
+pub extern "C" fn archivefs_node_close(node: *mut Node) -> i64 {
+    return unsafe { (*node).close() };
+}
+
+#[no_mangle]
 pub extern "C" fn archivefs_node_write_to_buffer(
     node: *mut Node,
     buf: *mut c_char,
