@@ -61,13 +61,13 @@ pub extern "C" fn archivefs_new_node(
     name: *mut c_char,
     buffer_size: libc::size_t,
 ) -> *mut Node {
-    let path: CString = unsafe { CString::from_raw(path) };
-    let path: String = path.into_string().unwrap();
+    let path = unsafe { CStr::from_ptr(path) };
+    let path: String = String::from(path.to_str().unwrap());
 
-    let name: CString = unsafe { CString::from_raw(name) };
-    let name: String = name.into_string().unwrap();
+    let name = unsafe { CStr::from_ptr(name) };
+    let name: String = String::from(name.to_str().unwrap());
 
-    let node: Node = Node::new(path, entry, name, buffer_size);
+    let node: Node = Node::new(path.clone(), entry, name.clone(), buffer_size);
 
     let node_box = Box::new(node);
     let ptr: *mut node::Node = Box::into_raw(node_box);
@@ -97,4 +97,19 @@ pub fn archivefs_does_file_exist(ptr: *const c_char) -> bool {
     let result: bool = utils::does_file_exist(&path);
 
     return result;
+}
+
+#[no_mangle]
+pub extern "C" fn archivefs_node_open(node: *mut Node) {
+    return unsafe { (*node).open() };
+}
+
+#[no_mangle]
+pub extern "C" fn archivefs_node_write_to_buffer(
+    node: *mut Node,
+    buf: *mut c_char,
+    size: libc::size_t,
+    offset: libc::off_t,
+) -> libc::size_t {
+    return unsafe { (*node).write_to_buffer(buf, size, offset) };
 }

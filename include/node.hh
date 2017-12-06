@@ -26,7 +26,6 @@ class Node {
     archive_entry *_entry;
 
     archive *_archive = nullptr;
-    char *_buffer = nullptr;
     const std::string _name;
     const size_t _buffer_size;
 

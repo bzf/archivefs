@@ -21,40 +21,10 @@ int64_t Node::size() { return archivefs_node_size(_node); }
 
 const std::string Node::name() { return _name; }
 
-void Node::open() {
-    if (_archive != nullptr) {
-        return;
-    }
-
-    _archive = archive_read_new();
-    _buffer = new char[_buffer_size];
-    archive_read_support_filter_all(_archive);
-    archive_read_support_format_all(_archive);
-
-    archive_open_and_read_from_path(_archive_path, _archive, _buffer_size);
-
-    struct archive_entry *entry;
-    const std::string our_entry_path = archive_entry_pathname(_entry);
-    while (archive_read_next_header(_archive, &entry) == ARCHIVE_OK) {
-        std::string their_entry_path = archive_entry_pathname(entry);
-        if (their_entry_path == our_entry_path) {
-            return;
-        }
-    }
-
-    throw std::runtime_error("Could not find the path in the archive");
-}
+void Node::open() { return archivefs_node_open(_node); }
 
 int Node::write_to_buffer(char *buf, size_t size, off_t offset) {
-    if (_buffer == nullptr) {
-        throw std::runtime_error("Must call open() before write_to_buffer()");
-    }
-
-    if (offset != -1) {
-        archive_seek_data(_archive, offset, 0);
-    }
-
-    return archive_read_data(_archive, buf, size);
+    return archivefs_node_write_to_buffer(_node, buf, size, offset);
 }
 
 int Node::close() {

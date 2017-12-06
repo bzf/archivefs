@@ -62,6 +62,7 @@ int archive_open_and_read_from_path(const std::string &path, archive *archive,
 
         const char *foo[vc.size() + 1];
         for (size_t i = 0; i < vc.size(); i++) {
+            std::cout << vc[i] << std::endl;
             foo[i] = vc[i];
         }
         foo[vc.size()] = nullptr;

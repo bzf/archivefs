@@ -1,7 +1,5 @@
 use std::path::Path;
 
-enum ArchiveEntry {}
-
 #[test]
 fn correct_path_removes_trailing_slashes() {
     let broken = String::from("/usr/local/bin/");
