@@ -2,11 +2,13 @@ extern crate libc;
 
 mod utils;
 mod node;
+mod archive;
 
 use std::boxed::Box;
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_void};
 use node::Node;
+use archive::Archive;
 
 #[no_mangle]
 pub extern "C" fn archivefs_correct_path(raw_path: *mut c_char) -> *mut c_char {
@@ -117,4 +119,16 @@ pub extern "C" fn archivefs_node_write_to_buffer(
     offset: libc::off_t,
 ) -> libc::size_t {
     return unsafe { (*node).write_to_buffer(buf, size, offset) };
+}
+
+#[no_mangle]
+pub extern "C" fn archivefs_archive_new(raw_path: *mut c_char) -> *mut Archive {
+    let path = unsafe { CStr::from_ptr(raw_path) };
+    let path: String = String::from(path.to_str().unwrap());
+
+    let archive: Archive = Archive::new(&path);
+    let archive_box = Box::new(archive);
+    let ptr: *mut Archive = Box::into_raw(archive_box);
+
+    return ptr;
 }

@@ -27,4 +27,6 @@ extern "C" int archivefs_node_close(void *archivefs_node);
 extern "C" int archivefs_node_write_to_buffer(void *archivefs_node, char *buf,
                                               size_t size, off_t offset);
 
+extern "C" void *archivefs_archive_new(const char *path);
+
 #endif /* ifndef LIBARCHIVEFS_H_ */

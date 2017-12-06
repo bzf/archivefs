@@ -36,6 +36,8 @@ Archive::Archive(const std::string &path)
 
     std::cerr << "[archive] freeing!" << std::endl;
     archive_read_free(_archive);
+
+    _archivefs_archive = archivefs_archive_new(path.c_str());
 }
 
 std::vector<std::string> Archive::list_files_in_root() {

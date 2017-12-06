@@ -26,6 +26,7 @@ class Archive : public ArchiveFacade {
     const std::string _archive_path;
 
     std::string correct_path(const std::string path);
+    void *_archivefs_archive = nullptr;
 };
 
 #endif /* ifndef ARCHIVE_H_ */
