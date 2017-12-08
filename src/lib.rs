@@ -70,7 +70,12 @@ pub extern "C" fn archivefs_new_node(
     let name = unsafe { CStr::from_ptr(name) };
     let name: String = String::from(name.to_str().unwrap());
 
-    let node: Node = Node::new(path.clone(), entry, name.clone(), buffer_size);
+    let node: Node = Node::new(
+        path.clone(),
+        entry as *mut ffi::ArchiveEntry,
+        name.clone(),
+        buffer_size,
+    );
 
     let node_box = Box::new(node);
     let ptr: *mut node::Node = Box::into_raw(node_box);

@@ -9,17 +9,22 @@ use ffi;
 use ffi::{Archive, ArchiveEntry};
 
 pub struct Node {
-    path: String,
+    archive_path: String,
     entry: *mut ArchiveEntry,
     buffer_size: libc::size_t,
     pub archive: Option<*mut Archive>,
 }
 
 impl Node {
-    pub fn new(path: String, entry: *mut c_void, _name: String, buffer_size: libc::size_t) -> Node {
+    pub fn new(
+        archive_path: String,
+        entry: *mut ArchiveEntry,
+        _name: String,
+        buffer_size: libc::size_t,
+    ) -> Node {
         let node: Node = Node {
-            path: path,
-            entry: entry as *mut ArchiveEntry,
+            archive_path: archive_path,
+            entry: entry,
             buffer_size: buffer_size,
             archive: None,
         };
@@ -48,7 +53,7 @@ impl Node {
         unsafe { ffi::archive_read_support_filter_all(archive) };
         unsafe { ffi::archive_read_support_format_all(archive) };
 
-        ffi::archive_open_and_read_from_path(&self.path, archive, self.buffer_size);
+        ffi::archive_open_and_read_from_path(&self.archive_path, archive, self.buffer_size);
 
         let mut entry: *mut ArchiveEntry = ptr::null_mut();
         let our_entry_path: *const c_char = unsafe { ffi::archive_entry_pathname(self.entry) };
