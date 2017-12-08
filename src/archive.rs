@@ -59,4 +59,14 @@ impl Archive {
             files: files,
         };
     }
+
+    pub fn list_files_in_root(&self) -> Vec<String> {
+        let mut archive: Vec<String> = vec![];
+
+        for filepath in self.files.keys() {
+            archive.push(filepath.clone());
+        }
+
+        return archive;
+    }
 }
