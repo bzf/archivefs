@@ -1,12 +1,8 @@
-pub struct Archive {
-    path: String,
-}
+pub struct Archive {}
 
 impl Archive {
-    pub fn new(path: &str) -> Archive {
-        let path: String = String::from(path);
-        let archive: Archive = Archive { path: path };
-
+    pub fn new(_path: &str) -> Archive {
+        let archive: Archive = Archive {};
         return archive;
     }
 }

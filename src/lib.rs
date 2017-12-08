@@ -3,6 +3,7 @@ extern crate libc;
 mod utils;
 mod node;
 mod archive;
+mod ffi;
 
 use std::boxed::Box;
 use std::ffi::{CStr, CString};
