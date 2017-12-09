@@ -22,7 +22,6 @@ class Node {
     int close();
 
   private:
-    const std::string _name;
     void *_node = nullptr;
 };
 

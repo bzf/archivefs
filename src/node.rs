@@ -13,6 +13,7 @@ pub struct Node {
     entry: *mut ArchiveEntry,
     buffer_size: libc::size_t,
     pub archive: Option<*mut Archive>,
+    pub name: String,
 }
 
 impl Clone for Node {
@@ -23,6 +24,7 @@ impl Clone for Node {
             archive_path: self.archive_path.clone(),
             buffer_size: self.buffer_size,
             archive: None,
+            name: self.name.clone(),
             entry: cloned_entry,
         };
     }
@@ -38,13 +40,14 @@ impl Node {
     pub fn new(
         archive_path: String,
         entry: *mut ArchiveEntry,
-        _name: String,
+        name: String,
         buffer_size: libc::size_t,
     ) -> Node {
         let node: Node = Node {
             archive_path: archive_path,
             entry: entry,
             buffer_size: buffer_size,
+            name: name,
             archive: None,
         };
 

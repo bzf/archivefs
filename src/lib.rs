@@ -93,6 +93,16 @@ pub extern "C" fn archivefs_node_is_directory(node: *mut Node) -> bool {
 }
 
 #[no_mangle]
+pub extern "C" fn archivefs_node_name(node: *mut Node) -> *mut libc::c_char {
+    let c_result: CString = unsafe {
+        let name = (*node).name.clone();
+        CString::from_vec_unchecked(name.into_bytes())
+    };
+
+    return c_result.into_raw();
+}
+
+#[no_mangle]
 pub extern "C" fn archivefs_node_size(node: *mut Node) -> libc::int64_t {
     return unsafe { (*node).size() };
 }
