@@ -13,6 +13,8 @@ Node::Node(const std::string archive_path, archive_entry *entry,
                                buffer_size);
 }
 
+Node::Node(void *node) : _node(node) {}
+
 bool Node::isDirectory() { return archivefs_node_is_directory(_node); }
 
 int64_t Node::size() { return archivefs_node_size(_node); }

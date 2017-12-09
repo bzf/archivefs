@@ -10,6 +10,7 @@ class Node {
   public:
     Node(const std::string archive_path, archive_entry *entry,
          const std::string name, size_t buffer_size = 8096);
+    Node(void *node);
 
     bool isDirectory();
 

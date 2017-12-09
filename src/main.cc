@@ -70,7 +70,7 @@ int readdir_callback(const char *directory_prefix, void *buf,
 // https://fossies.org/dox/fuse-2.9.7/structfuse__operations.html#a08a085fceedd8770e3290a80aa9645ac
 int open_callback(const char *path, fuse_file_info *) {
     auto node = g_archive->get_node_for_path(path);
-    if (node) {
+    if (node != nullptr) {
         node->open();
     }
 

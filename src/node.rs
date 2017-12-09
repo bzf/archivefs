@@ -16,26 +16,6 @@ pub struct Node {
     pub name: String,
 }
 
-impl Clone for Node {
-    fn clone(&self) -> Node {
-        let cloned_entry = unsafe { ffi::archive_entry_clone(self.entry) };
-
-        return Node {
-            archive_path: self.archive_path.clone(),
-            buffer_size: self.buffer_size,
-            archive: None,
-            name: self.name.clone(),
-            entry: cloned_entry,
-        };
-    }
-}
-
-impl Drop for Node {
-    fn drop(&mut self) {
-        unsafe { ffi::archive_entry_free(self.entry) };
-    }
-}
-
 impl Node {
     pub fn new(
         archive_path: String,

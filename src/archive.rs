@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::os::raw::c_char;
 use std::ffi::CStr;
 use std::ptr;
+use std::rc::Rc;
 
 use utils;
 use ffi;
@@ -9,14 +10,14 @@ use node::Node;
 
 pub struct Archive {
     path: String,
-    files: HashMap<String, Node>,
+    files: HashMap<String, Rc<Node>>,
 }
 
 impl Archive {
     pub fn new(path: &str) -> Archive {
         let path: String = String::from(path);
         println!("Creating rust Archive with '{}'", path);
-        let mut files: HashMap<String, Node> = HashMap::new();
+        let mut files: HashMap<String, Rc<Node>> = HashMap::new();
 
         let archive: *mut ffi::Archive = unsafe { ffi::archive_read_new() };
         unsafe {
@@ -47,7 +48,7 @@ impl Archive {
 
             let mut archive_pathname = utils::correct_path(archive_pathname);
             archive_pathname.insert(0, '/');
-            files.insert(archive_pathname, node);
+            files.insert(archive_pathname, Rc::new(node));
 
             unsafe { ffi::archive_read_data_skip(archive) };
         }
@@ -70,7 +71,7 @@ impl Archive {
         return archive;
     }
 
-    pub fn get_node_for_path(&self, path: &str) -> Option<Node> {
+    pub fn get_node_for_path(&self, path: &str) -> Option<Rc<Node>> {
         for (filepath, node) in &self.files {
             if filepath == path {
                 return Some(node.clone());
@@ -80,14 +81,10 @@ impl Archive {
         return None;
     }
 
-    pub fn get_nodes_in_directory(&self, directory_prefix: &str) -> Vec<Node> {
-        let mut nodes: Vec<Node> = vec![];
+    pub fn get_nodes_in_directory(&self, directory_prefix: &str) -> Vec<Rc<Node>> {
+        let mut nodes: Vec<Rc<Node>> = vec![];
 
         for (filepath, node) in &self.files {
-            if filepath.len() > directory_prefix.len() {
-                continue;
-            }
-
             let mut path_with_directory_prefix: String = filepath.replace(directory_prefix, "");
 
             // Remove any leading slashes

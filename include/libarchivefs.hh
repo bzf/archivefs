@@ -31,4 +31,14 @@ extern "C" int archivefs_node_write_to_buffer(void *archivefs_node, char *buf,
 
 extern "C" void *archivefs_archive_new(const char *path);
 
+extern "C" void *archivefs_archive_get_node_for_path(void *archive,
+                                                     const char *path);
+
+extern "C" void *archivefs_archive_get_node_in_directory(void *archive,
+                                                         const char *prefix,
+                                                         int index);
+
+extern "C" int archivefs_archive_count_nodes_in_directory(void *archive,
+                                                          const char *prefix);
+
 #endif /* ifndef LIBARCHIVEFS_H_ */
