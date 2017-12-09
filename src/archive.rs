@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::os::raw::c_char;
 use std::ffi::CStr;
-use std::{ptr, mem};
+use std::ptr;
 
 use utils;
 use ffi;
@@ -31,15 +31,16 @@ impl Archive {
                 break;
             }
 
+            let cloned_entry: *mut ffi::ArchiveEntry =
+                unsafe { ffi::archive_entry_clone(archive_entry) };
             let archive_pathname: *const c_char =
                 unsafe { ffi::archive_entry_pathname(archive_entry) };
             let archive_path = unsafe { CStr::from_ptr(archive_pathname) };
             let archive_pathname: String = String::from(archive_path.to_str().unwrap());
-            println!("Found file '{}'", archive_pathname);
 
             let node: Node = Node::new(
                 String::from(path.clone()),
-                archive_entry,
+                cloned_entry,
                 archive_pathname.clone(),
                 8192,
             );
@@ -51,7 +52,6 @@ impl Archive {
             unsafe { ffi::archive_read_data_skip(archive) };
         }
 
-        println!("Freeing archive");
         unsafe { ffi::archive_read_free(archive) };
 
         return Archive {
@@ -68,5 +68,39 @@ impl Archive {
         }
 
         return archive;
+    }
+
+    pub fn get_node_for_path(&self, path: &str) -> Option<Node> {
+        for (filepath, node) in &self.files {
+            if filepath == path {
+                return Some(node.clone());
+            }
+        }
+
+        return None;
+    }
+
+    pub fn get_nodes_in_directory(&self, directory_prefix: &str) -> Vec<Node> {
+        let mut nodes: Vec<Node> = vec![];
+
+        for (filepath, node) in &self.files {
+            if filepath.len() > directory_prefix.len() {
+                continue;
+            }
+
+            let mut path_with_directory_prefix: String = filepath.replace(directory_prefix, "");
+
+            // Remove any leading slashes
+            if path_with_directory_prefix.starts_with("/") {
+                path_with_directory_prefix.remove(0);
+            }
+
+            // If the folder doesn't end on "/", show it in the directory
+            if !path_with_directory_prefix.ends_with("/") {
+                nodes.push(node.clone());
+            }
+        }
+
+        return nodes;
     }
 }

@@ -1,7 +1,7 @@
 extern crate libc;
 
 use libc::{size_t, off_t};
-use std::os::raw::{c_char, c_void};
+use std::os::raw::c_char;
 use std::ffi::CStr;
 use std::ptr;
 
@@ -13,6 +13,25 @@ pub struct Node {
     entry: *mut ArchiveEntry,
     buffer_size: libc::size_t,
     pub archive: Option<*mut Archive>,
+}
+
+impl Clone for Node {
+    fn clone(&self) -> Node {
+        let cloned_entry = unsafe { ffi::archive_entry_clone(self.entry) };
+
+        return Node {
+            archive_path: self.archive_path.clone(),
+            buffer_size: self.buffer_size,
+            archive: None,
+            entry: cloned_entry,
+        };
+    }
+}
+
+impl Drop for Node {
+    fn drop(&mut self) {
+        unsafe { ffi::archive_entry_free(self.entry) };
+    }
 }
 
 impl Node {
