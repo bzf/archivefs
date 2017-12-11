@@ -15,8 +15,7 @@ class DirectoryArchive : public ArchiveFacade {
     std::vector<Node *> get_nodes_in_directory(const char *directory);
 
   private:
-    const std::string _directory_path;
-    std::map<std::string, Archive> _dict;
+    void *_directory_archive = nullptr;
 };
 
 #endif /* ifndef DIRECTORY_ARCHIVE_H_ */

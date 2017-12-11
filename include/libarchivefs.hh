@@ -41,4 +41,23 @@ extern "C" void *archivefs_archive_get_node_in_directory(void *archive,
 extern "C" int archivefs_archive_count_nodes_in_directory(void *archive,
                                                           const char *prefix);
 
+extern "C" int
+archivefs_directory_archive_count_nodes_in_root(void *directory_archive);
+
+extern "C" const char *
+archivefs_directory_archive_get_node_in_root(void *directory_archive,
+                                             int index);
+
+extern "C" void *archivefs_directory_archive_get_node_in_directory(
+    void *directory_archive, const char *prefix, int index);
+
+extern "C" int
+archivefs_directory_archive_count_nodes_in_directory(void *directory_archive,
+                                                     const char *prefix);
+
+extern "C" void *archivefs_directory_archive_new(const char *path);
+
+extern "C" void *
+archivefs_directory_archive_get_node_for_path(void *archive, const char *path);
+
 #endif /* ifndef LIBARCHIVEFS_H_ */

@@ -1,17 +1,20 @@
 extern crate libc;
+extern crate walkdir;
 
 mod utils;
 mod node;
 mod archive;
 mod ffi;
+mod directory_archive;
 
 use std::boxed::Box;
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_void};
-use std::{ptr, mem};
+use std::ptr;
 use std::rc::Rc;
 use node::Node;
 use archive::Archive;
+use directory_archive::DirectoryArchive;
 
 #[no_mangle]
 pub extern "C" fn archivefs_correct_path(raw_path: *mut c_char) -> *mut c_char {
@@ -204,4 +207,98 @@ pub extern "C" fn archivefs_archive_count_nodes_in_directory(
 
     let nodes: Vec<Rc<Node>> = unsafe { (*archive).get_nodes_in_directory(&prefix) };
     return nodes.len() as i64;
+}
+
+#[no_mangle]
+pub extern "C" fn archivefs_directory_archive_get_node_in_directory(
+    archive: *mut DirectoryArchive,
+    prefix: *mut c_char,
+    index: i64,
+) -> *const Node {
+    let prefix = unsafe { CStr::from_ptr(prefix) };
+    let prefix: String = String::from(prefix.to_str().unwrap());
+
+    let nodes: Vec<Rc<Node>> = unsafe { (*archive).get_nodes_in_directory(&prefix) };
+    let node = nodes.get(index as usize);
+
+    if let Some(node) = node {
+        let n = node.clone();
+        let ptr = Rc::into_raw(n);
+        return ptr;
+    } else {
+        return ptr::null();
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn archivefs_directory_archive_count_nodes_in_root(
+    archive: *mut DirectoryArchive,
+) -> i64 {
+    let nodes: Vec<String> = unsafe { (*archive).list_files_in_root() };
+    return nodes.len() as i64;
+}
+
+#[no_mangle]
+pub extern "C" fn archivefs_directory_archive_get_node_in_root(
+    archive: *mut DirectoryArchive,
+    index: i64,
+) -> *mut libc::c_char {
+    let nodes: Vec<String> = unsafe { (*archive).list_files_in_root() };
+    let string = nodes.get(index as usize);
+
+    if let Some(filename) = string {
+        let cstr = CString::new(filename.clone()).unwrap();
+        return cstr.into_raw();
+    } else {
+        panic!("archivefs_directory_archive_get_node_in_root: out of range");
+    }
+}
+
+
+#[no_mangle]
+pub extern "C" fn archivefs_directory_archive_count_nodes_in_directory(
+    archive: *mut DirectoryArchive,
+    prefix: *mut c_char,
+) -> i64 {
+    let prefix = unsafe { CStr::from_ptr(prefix) };
+    let prefix: String = String::from(prefix.to_str().unwrap());
+    println!("--> {}", prefix);
+
+    let nodes: Vec<Rc<Node>> = unsafe { (*archive).get_nodes_in_directory(&prefix) };
+    return nodes.len() as i64;
+}
+
+
+#[no_mangle]
+pub extern "C" fn archivefs_directory_archive_new(raw_path: *mut c_char) -> *mut DirectoryArchive {
+    let path = unsafe { CStr::from_ptr(raw_path) };
+    let path: String = String::from(path.to_str().unwrap());
+
+    let directory_archive: DirectoryArchive = DirectoryArchive::new(&path);
+    let directory_archive_box = Box::new(directory_archive);
+    let ptr: *mut DirectoryArchive = Box::into_raw(directory_archive_box);
+
+    return ptr;
+}
+
+#[no_mangle]
+pub extern "C" fn archivefs_directory_archive_get_node_for_path(
+    archive: *mut DirectoryArchive,
+    path: *mut c_char,
+) -> *const Node {
+    let path = unsafe { CStr::from_ptr(path) };
+    let path: String = String::from(path.to_str().unwrap());
+
+    let node: Option<Rc<Node>> = unsafe { (*archive).get_node_for_path(&path) };
+
+    match node {
+        Some(node) => {
+            let ptr = Rc::into_raw(node);
+            return ptr;
+        }
+
+        None => {
+            return ptr::null();
+        }
+    }
 }
