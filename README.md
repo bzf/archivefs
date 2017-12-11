@@ -3,7 +3,7 @@
 
 ## Usage
   ```man
-  archivefs [-sdf] --file=/some/absolute/path /mountpoint
+  archivefs [-sdf] --directory=/some/absolute/path /mountpoint
   ```
 
 ## Description
