@@ -262,7 +262,6 @@ pub extern "C" fn archivefs_directory_archive_count_nodes_in_directory(
 ) -> i64 {
     let prefix = unsafe { CStr::from_ptr(prefix) };
     let prefix: String = String::from(prefix.to_str().unwrap());
-    println!("--> {}", prefix);
 
     let nodes: Vec<Rc<Node>> = unsafe { (*archive).get_nodes_in_directory(&prefix) };
     return nodes.len() as i64;

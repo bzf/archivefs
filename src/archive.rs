@@ -16,7 +16,6 @@ pub struct Archive {
 impl Archive {
     pub fn new(path: &str) -> Archive {
         let path: String = String::from(path);
-        println!("Creating rust Archive with '{}'", path);
         let mut files: HashMap<String, Rc<Node>> = HashMap::new();
 
         let archive: *mut ffi::Archive = unsafe { ffi::archive_read_new() };
