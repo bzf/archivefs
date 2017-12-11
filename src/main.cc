@@ -9,17 +9,20 @@
 #include "libarchivefs.hh"
 
 static ArchiveFacade *g_archive = nullptr;
+static void *g_directory_archive = nullptr;
 
 static int getattr_callback(const char *path, struct stat *stbuf) {
     memset(stbuf, 0, sizeof(struct stat));
 
-    auto node = g_archive->get_node_for_path(path);
+    auto node = archivefs_directory_archive_get_node_for_path(
+        g_directory_archive, path);
     if (node != nullptr) {
-        stbuf->st_mode = (node->isDirectory() ? S_IFDIR : S_IFREG) | 0777;
-        stbuf->st_nlink = (int)node->isDirectory() + 1;
+        bool node_is_directory = archivefs_node_is_directory(node);
+        stbuf->st_mode = (node_is_directory ? S_IFDIR : S_IFREG) | 0777;
+        stbuf->st_nlink = (int)node_is_directory + 1;
 
-        if (!node->isDirectory()) {
-            stbuf->st_size = node->size();
+        if (!node_is_directory) {
+            stbuf->st_size = archivefs_node_size(node);
         }
 
         return 0;
@@ -154,6 +157,8 @@ int main(int argc, char **argv) {
         g_archive = new Archive(configuration.archive_path);
     } else if (configuration.directory_path != nullptr) {
         g_archive = new DirectoryArchive(configuration.directory_path);
+        g_directory_archive =
+            archivefs_directory_archive_new(configuration.directory_path);
     }
 
     return fuse_main(args.argc, args.argv, &operations, NULL);
