@@ -16,7 +16,6 @@
   To build `archivefs` there are some packages that are required to be
   installed on the system:
 
-  * [libboost_filesystem](https://github.com/boostorg/filesystem)
   * [libfuse](https://github.com/libfuse/libfuse) (or [osxfuse](https://github.com/osxfuse/osxfuse))
   * [libarchive](https://github.com/libarchive/libarchive)
   * A C++11 compatiable compiler

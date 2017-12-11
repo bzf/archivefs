@@ -4,7 +4,7 @@ UNAME := $(shell uname)
 
 CFLAGS = -Wall -Wextra -Werror -std=c++11 -fdiagnostics-color=auto \
 				 -Iinclude -I/usr/local/include -I/usr/local/opt/libarchive/include
-LDFLAGS = -larchive -lboost_system -lboost_filesystem -g
+LDFLAGS = -larchive
 
 ifeq ($(UNAME),Darwin)
 	LDFLAGS += -losxfuse
