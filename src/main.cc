@@ -1,14 +1,12 @@
 #include <iostream>
 
+#define FUSE_USE_VERSION 31
+
 #include <fuse.h>
 #include <string.h>
 
-#include "archive.hh"
-#include "archive_facade.hh"
-#include "directory_archive.hh"
 #include "libarchivefs.hh"
 
-static ArchiveFacade *g_archive = nullptr;
 static void *g_directory_archive = nullptr;
 
 static int getattr_callback(const char *path, struct stat *stbuf) {
@@ -100,8 +98,6 @@ int read_callback(const char *path, char *buf, size_t size, off_t offset,
     }
 }
 
-int flush_callback(const char *, fuse_file_info *) { return 0; }
-
 int release_callback(const char *path, fuse_file_info *) {
     void *node = archivefs_directory_archive_get_node_for_path(
         g_directory_archive, path);
@@ -112,65 +108,37 @@ int release_callback(const char *path, fuse_file_info *) {
     }
 }
 
-int statfs_callback(const char *, struct statvfs *) { return 0; }
-
-int opendir_callback(const char *, struct fuse_file_info *) { return 0; }
-
-int releasedir_callback(const char *, struct fuse_file_info *) { return 0; }
-
-int fgetattr_callback(const char *, struct stat *, struct fuse_file_info *) {
-    return ENOENT;
-}
-
 typedef struct archivefs_conf {
-    char *archive_path;
     char *directory_path;
 } archivefs_conf;
 
 static struct fuse_opt archivefs_opts[] = {
-    {"--file=%s", offsetof(archivefs_conf, archive_path), 0},
     {"--directory=%s", offsetof(archivefs_conf, directory_path), 0},
     FUSE_OPT_END,
 };
 
-struct fuse_operations build_operations() {
-    struct fuse_operations operations;
-    operations.getattr = getattr_callback;
-    operations.open = open_callback;
-    operations.read = read_callback;
-    operations.readdir = readdir_callback;
-    operations.opendir = opendir_callback;
-    operations.flush = flush_callback;
-    operations.release = release_callback;
-    operations.releasedir = releasedir_callback;
-    // operations.getxattr = getxattr_callback;
-    operations.statfs = statfs_callback;
-    // operations.fgetattr = fgetattr_callback;
-
-    return operations;
+static struct fuse_operations operations = {
+    .getattr = getattr_callback,
+    .readdir = readdir_callback,
+    .open = open_callback,
+    .read = read_callback,
+    .release = release_callback,
 };
 
 int main(int argc, char **argv) {
     struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
-    struct fuse_operations operations = build_operations();
 
     archivefs_conf configuration;
     memset(&configuration, 0, sizeof(configuration));
     fuse_opt_parse(&args, &configuration, archivefs_opts, NULL);
 
-    if (configuration.archive_path == nullptr &&
-        configuration.directory_path == nullptr) {
+    if (configuration.directory_path == nullptr) {
         std::cerr << "Need to set which archive you want to mount" << std::endl;
         return 1;
     }
 
-    if (configuration.archive_path != nullptr) {
-        g_archive = new Archive(configuration.archive_path);
-    } else if (configuration.directory_path != nullptr) {
-        g_archive = new DirectoryArchive(configuration.directory_path);
-        g_directory_archive =
-            archivefs_directory_archive_new(configuration.directory_path);
-    }
+    g_directory_archive =
+        archivefs_directory_archive_new(configuration.directory_path);
 
     return fuse_main(args.argc, args.argv, &operations, NULL);
 }
