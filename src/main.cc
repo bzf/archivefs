@@ -80,9 +80,10 @@ int readdir_callback(const char *directory_prefix, void *buf,
 
 // https://fossies.org/dox/fuse-2.9.7/structfuse__operations.html#a08a085fceedd8770e3290a80aa9645ac
 int open_callback(const char *path, fuse_file_info *) {
-    auto node = g_archive->get_node_for_path(path);
+    void *node = archivefs_directory_archive_get_node_for_path(
+        g_directory_archive, path);
     if (node != nullptr) {
-        node->open();
+        archivefs_node_open(node);
     }
 
     return 0;
@@ -90,9 +91,10 @@ int open_callback(const char *path, fuse_file_info *) {
 
 int read_callback(const char *path, char *buf, size_t size, off_t offset,
                   fuse_file_info *) {
-    auto node = g_archive->get_node_for_path(path);
+    void *node = archivefs_directory_archive_get_node_for_path(
+        g_directory_archive, path);
     if (node) {
-        return node->write_to_buffer(buf, size, offset);
+        return archivefs_node_write_to_buffer(node, buf, size, offset);
     } else {
         return -ENOENT;
     }
@@ -101,9 +103,10 @@ int read_callback(const char *path, char *buf, size_t size, off_t offset,
 int flush_callback(const char *, fuse_file_info *) { return 0; }
 
 int release_callback(const char *path, fuse_file_info *) {
-    auto node = g_archive->get_node_for_path(path);
+    void *node = archivefs_directory_archive_get_node_for_path(
+        g_directory_archive, path);
     if (node) {
-        return node->close();
+        return archivefs_node_close(node);
     } else {
         return -ENOENT;
     }
