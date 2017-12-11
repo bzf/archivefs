@@ -1,7 +1,18 @@
 .PHONY: clean libarchivefs
 
-CFLAGS = -Wall -Wextra -Werror -std=c++11 -Iinclude -I/usr/local/include -I/usr/local/opt/libarchive/include
-LDFLAGS = -losxfuse -larchive -lboost_system -lboost_filesystem
+UNAME := $(shell uname)
+
+CFLAGS = -Wall -Wextra -Werror -std=c++11 -fdiagnostics-color=auto \
+				 -Iinclude -I/usr/local/include -I/usr/local/opt/libarchive/include
+LDFLAGS = -larchive -lboost_system -lboost_filesystem -g
+
+ifeq ($(UNAME),Darwin)
+	LDFLAGS += -losxfuse
+	CFLAGS += -D_DARWIN_USE_64_BIT_INODE
+endif
+ifeq ($(UNAME),Linux)
+	LDFLAGS += -lfuse
+endif
 
 all: archivefs
 

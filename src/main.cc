@@ -117,19 +117,16 @@ static struct fuse_opt archivefs_opts[] = {
     FUSE_OPT_END,
 };
 
-static struct fuse_operations operations = {
-    .getattr = getattr_callback,
-    .readdir = readdir_callback,
-    .open = open_callback,
-    .read = read_callback,
-    .release = release_callback,
-};
-
 int main(int argc, char **argv) {
     struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+    struct fuse_operations operations {};
+    operations.getattr = &getattr_callback;
+    operations.open = open_callback;
+    operations.read = read_callback;
+    operations.readdir = readdir_callback;
+    operations.release = release_callback;
 
-    archivefs_conf configuration;
-    memset(&configuration, 0, sizeof(configuration));
+    struct archivefs_conf configuration;
     fuse_opt_parse(&args, &configuration, archivefs_opts, NULL);
 
     if (configuration.directory_path == nullptr) {
