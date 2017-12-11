@@ -16,10 +16,11 @@ std::vector<std::string> DirectoryArchive::list_files_in_root() {
         archivefs_directory_archive_count_nodes_in_root(_directory_archive);
 
     for (int i = 0; i < index; i++) {
-        auto ptr =
+        auto node =
             archivefs_directory_archive_get_node_in_root(_directory_archive, i);
+        const char *filename = archivefs_node_name(node);
 
-        vector.push_back(ptr);
+        vector.push_back(filename);
     }
 
     return vector;

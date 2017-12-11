@@ -234,7 +234,7 @@ pub extern "C" fn archivefs_directory_archive_get_node_in_directory(
 pub extern "C" fn archivefs_directory_archive_count_nodes_in_root(
     archive: *mut DirectoryArchive,
 ) -> i64 {
-    let nodes: Vec<String> = unsafe { (*archive).list_files_in_root() };
+    let nodes: Vec<Rc<Node>> = unsafe { (*archive).list_files_in_root() };
     return nodes.len() as i64;
 }
 
@@ -242,13 +242,12 @@ pub extern "C" fn archivefs_directory_archive_count_nodes_in_root(
 pub extern "C" fn archivefs_directory_archive_get_node_in_root(
     archive: *mut DirectoryArchive,
     index: i64,
-) -> *mut libc::c_char {
-    let nodes: Vec<String> = unsafe { (*archive).list_files_in_root() };
-    let string = nodes.get(index as usize);
+) -> *const Node {
+    let nodes: Vec<Rc<Node>> = unsafe { (*archive).list_files_in_root() };
+    let node = nodes.get(index as usize);
 
-    if let Some(filename) = string {
-        let cstr = CString::new(filename.clone()).unwrap();
-        return cstr.into_raw();
+    if let Some(node) = node {
+        return Rc::into_raw(node.clone());
     } else {
         panic!("archivefs_directory_archive_get_node_in_root: out of range");
     }

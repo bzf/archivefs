@@ -48,22 +48,30 @@ int readdir_callback(const char *directory_prefix, void *buf,
     filler(buf, "..", NULL, 0);
 
     if (strcmp(directory_prefix, "/") == 0) {
-        auto names = g_archive->list_files_in_root();
+        int nodes_in_root = archivefs_directory_archive_count_nodes_in_root(
+            g_directory_archive);
 
-        auto name_iterator = names.begin();
-        for (; name_iterator != names.end(); name_iterator++) {
-            filler(buf, name_iterator->c_str(), NULL, 0);
+        for (int i = 0; i < nodes_in_root; i++) {
+            void *node = archivefs_directory_archive_get_node_in_root(
+                g_directory_archive, i);
+            const char *node_name = archivefs_node_name(node);
+            filler(buf, node_name, NULL, 0);
         }
     } else {
-        auto nodes = g_archive->get_nodes_in_directory(directory_prefix);
+        int nodes_in_directory =
+            archivefs_directory_archive_count_nodes_in_directory(
+                g_directory_archive, directory_prefix);
 
-        auto node_iterator = nodes.begin();
-        for (; node_iterator != nodes.end(); node_iterator++) {
-            if ((*node_iterator)->isDirectory()) {
+        for (int i = 0; i < nodes_in_directory; i++) {
+            void *node = archivefs_directory_archive_get_node_in_directory(
+                g_directory_archive, directory_prefix, i);
+
+            if (archivefs_node_is_directory(node)) {
                 continue;
             }
 
-            filler(buf, (*node_iterator)->name().c_str(), NULL, 0);
+            const char *node_name = archivefs_node_name(node);
+            filler(buf, node_name, NULL, 0);
         }
     }
 

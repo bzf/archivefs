@@ -37,14 +37,16 @@ impl DirectoryArchive {
         return DirectoryArchive { archives: archives };
     }
 
-    pub fn list_files_in_root(&self) -> Vec<String> {
-        let mut names: Vec<String> = vec![];
+    pub fn list_files_in_root(&self) -> Vec<Rc<Node>> {
+        let mut nodes: Vec<Rc<Node>> = vec![];
 
         for name in self.archives.keys() {
-            names.push(name.clone());
+            let directory_node = Node::new(name.clone(), ptr::null_mut(), name.clone(), 8192);
+            let ptr = Rc::new(directory_node);
+            nodes.push(ptr);
         }
 
-        return names;
+        return nodes;
     }
 
     // pub fn get_node_for_path(&self,
@@ -77,7 +79,10 @@ impl DirectoryArchive {
         let nodes: Vec<Rc<Node>> = vec![];
 
         for (filename, archive) in &self.archives {
-            if directory_prefix == filename {
+            let mut filepath: String = String::from("/");
+            filepath.push_str(&filename);
+
+            if directory_prefix == filepath {
                 return archive.get_nodes_in_directory("/");
             }
         }

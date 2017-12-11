@@ -44,7 +44,7 @@ extern "C" int archivefs_archive_count_nodes_in_directory(void *archive,
 extern "C" int
 archivefs_directory_archive_count_nodes_in_root(void *directory_archive);
 
-extern "C" const char *
+extern "C" void *
 archivefs_directory_archive_get_node_in_root(void *directory_archive,
                                              int index);
 
