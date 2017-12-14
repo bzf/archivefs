@@ -10,34 +10,7 @@
 static void *g_directory_archive = nullptr;
 
 static int getattr_callback(const char *path, struct stat *stbuf) {
-    memset(stbuf, 0, sizeof(struct stat));
-
-    auto node = archivefs_directory_archive_get_node_for_path(
-        g_directory_archive, path);
-    if (node != nullptr) {
-        bool node_is_directory = archivefs_node_is_directory(node);
-        stbuf->st_mode = (node_is_directory ? S_IFDIR : S_IFREG) | 0777;
-        stbuf->st_nlink = (int)node_is_directory + 1;
-
-        if (!node_is_directory) {
-            stbuf->st_size = archivefs_node_size(node);
-        }
-
-        return 0;
-    }
-
-    if (strcmp(path, "/") == 0) {
-        stbuf->st_mode = S_IFDIR | 0755;
-        stbuf->st_nlink = 2;
-        return 0;
-    }
-
-    return -ENOENT;
-}
-
-/* https://sourceforge.net/p/fuse/mailman/message/32809727/ */
-int getxattr_callback(const char *, const char *, char *, size_t, uint32_t) {
-    return ENODATA;
+    return archivefs_handle_getattr_callback(g_directory_archive, path, stbuf);
 }
 
 int readdir_callback(const char *directory_prefix, void *buf,

@@ -12,8 +12,45 @@ use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::ptr;
 use std::rc::Rc;
+use libc::stat;
 use node::Node;
 use directory_archive::DirectoryArchive;
+
+#[no_mangle]
+pub fn archivefs_handle_getattr_callback(
+    directory_archive: *mut DirectoryArchive,
+    path: *mut c_char,
+    stbuf: *mut stat,
+) -> i32 {
+    let path = unsafe { CStr::from_ptr(path) };
+    let path: &str = path.to_str().unwrap();
+
+    if let Some(node) = unsafe { (*directory_archive).get_node_for_path(&path) } {
+        unsafe {
+            (*stbuf).st_mode = if node.is_directory() {
+                libc::S_IFDIR | 0o0777
+            } else {
+                libc::S_IFREG | 0o0777
+            }
+        };
+
+        unsafe { (*stbuf).st_nlink = (node.is_directory() as u16) + 1 };
+        if !node.is_directory() {
+            unsafe { (*stbuf).st_size = node.size() };
+        }
+
+        return 0;
+    }
+
+    if path == "/" {
+        unsafe { (*stbuf).st_mode = libc::S_IFDIR | 0o0755 };
+        unsafe { (*stbuf).st_nlink = 2 };
+        return 0;
+    }
+
+    return -libc::ENOENT;
+}
+
 
 #[no_mangle]
 pub extern "C" fn archivefs_node_name(node: *mut Node) -> *mut libc::c_char {

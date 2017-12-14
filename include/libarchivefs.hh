@@ -3,6 +3,10 @@
 
 #include <archive_entry.h>
 
+extern "C" int archivefs_handle_getattr_callback(void *directory_archive,
+                                                 const char *path,
+                                                 struct stat *stbuf);
+
 extern "C" bool archivefs_node_is_directory(void *archivefs_node);
 
 extern "C" const char *archivefs_node_name(void *archivefs_node);
