@@ -7,11 +7,11 @@ extern "C" int archivefs_handle_getattr_callback(void *directory_archive,
                                                  const char *path,
                                                  struct stat *stbuf);
 
-extern "C" bool archivefs_node_is_directory(void *archivefs_node);
-
-extern "C" const char *archivefs_node_name(void *archivefs_node);
-
-extern "C" int64_t archivefs_node_size(void *archivefs_node);
+extern "C" int archivefs_handle_readdir_callback(void *directory_archive,
+                                                 const char *directory_prefix,
+                                                 void *buf,
+                                                 fuse_fill_dir_t filler, off_t,
+                                                 struct fuse_file_info *);
 
 extern "C" void archivefs_node_open(void *archivefs_node);
 
@@ -19,20 +19,6 @@ extern "C" int archivefs_node_close(void *archivefs_node);
 
 extern "C" int archivefs_node_write_to_buffer(void *archivefs_node, char *buf,
                                               size_t size, off_t offset);
-
-extern "C" int
-archivefs_directory_archive_count_nodes_in_root(void *directory_archive);
-
-extern "C" void *
-archivefs_directory_archive_get_node_in_root(void *directory_archive,
-                                             int index);
-
-extern "C" void *archivefs_directory_archive_get_node_in_directory(
-    void *directory_archive, const char *prefix, int index);
-
-extern "C" int
-archivefs_directory_archive_count_nodes_in_directory(void *directory_archive,
-                                                     const char *prefix);
 
 extern "C" void *archivefs_directory_archive_new(const char *path);
 

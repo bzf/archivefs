@@ -9,10 +9,10 @@ mod directory_archive;
 
 use std::boxed::Box;
 use std::ffi::{CStr, CString};
-use std::os::raw::c_char;
+use std::os::raw::{c_void, c_char};
 use std::ptr;
 use std::rc::Rc;
-use libc::stat;
+use libc::{stat, off_t};
 use node::Node;
 use directory_archive::DirectoryArchive;
 
@@ -51,29 +51,39 @@ pub fn archivefs_handle_getattr_callback(
     return -libc::ENOENT;
 }
 
-
 #[no_mangle]
-pub extern "C" fn archivefs_node_name(node: *mut Node) -> *mut libc::c_char {
-    let name: &str = unsafe { &(*node).name };
+pub extern "C" fn archivefs_handle_readdir_callback(
+    directory_archive: *mut DirectoryArchive,
+    directory_prefix: *const c_char,
+    buffer: *mut c_void,
+    filler: extern "C" fn(*mut c_void, *const c_char, *const c_void, off_t) -> i32,
+    _: off_t,
+    _: *mut ffi::FuseFileInfo,
+) -> i32 {
+    let path = CString::new(".").unwrap();
+    filler(buffer, path.as_ptr(), ptr::null(), 0);
+    let path = CString::new("..").unwrap();
+    filler(buffer, path.as_ptr(), ptr::null(), 0);
 
-    let name: String = String::from(name);
-    let c_result: CString = unsafe { CString::from_vec_unchecked(name.into_bytes()) };
+    let directory_prefix = unsafe { CStr::from_ptr(directory_prefix) };
+    let directory_prefix: String = String::from(directory_prefix.to_str().unwrap());
 
-    return c_result.into_raw();
-}
-
-#[no_mangle]
-pub extern "C" fn archivefs_node_is_directory(node: *mut Node) -> bool {
-    if node.is_null() {
-        return true;
+    let nodes = if directory_prefix == "/" {
+        unsafe { (*directory_archive).list_files_in_root() }
     } else {
-        return unsafe { (*node).is_directory() };
-    }
-}
+        unsafe { (*directory_archive).get_nodes_in_directory(&directory_prefix) }
+    };
 
-#[no_mangle]
-pub extern "C" fn archivefs_node_size(node: *mut Node) -> libc::int64_t {
-    return unsafe { (*node).size() };
+    for node in nodes {
+        let node_name: &str = &node.name;
+        let node_name = CString::new(node_name).unwrap();
+
+        let node_ptr = node_name.into_raw();
+        filler(buffer, node_ptr, ptr::null(), 0);
+        let _ = unsafe { CString::from_raw(node_ptr) };
+    }
+
+    return 0;
 }
 
 #[no_mangle]
@@ -95,64 +105,6 @@ pub extern "C" fn archivefs_node_write_to_buffer(
 ) -> libc::size_t {
     return unsafe { (*node).write_to_buffer(buf, size, offset) };
 }
-
-#[no_mangle]
-pub extern "C" fn archivefs_directory_archive_get_node_in_directory(
-    archive: *mut DirectoryArchive,
-    prefix: *mut c_char,
-    index: i64,
-) -> *const Node {
-    let prefix = unsafe { CStr::from_ptr(prefix) };
-    let prefix: String = String::from(prefix.to_str().unwrap());
-
-    let nodes: Vec<Rc<Node>> = unsafe { (*archive).get_nodes_in_directory(&prefix) };
-    let node = nodes.get(index as usize);
-
-    if let Some(node) = node {
-        let n = node.clone();
-        let ptr = Rc::into_raw(n);
-        return ptr;
-    } else {
-        return ptr::null();
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn archivefs_directory_archive_count_nodes_in_root(
-    archive: *mut DirectoryArchive,
-) -> i64 {
-    let nodes: Vec<Rc<Node>> = unsafe { (*archive).list_files_in_root() };
-    return nodes.len() as i64;
-}
-
-#[no_mangle]
-pub extern "C" fn archivefs_directory_archive_get_node_in_root(
-    archive: *mut DirectoryArchive,
-    index: i64,
-) -> *const Node {
-    let nodes: Vec<Rc<Node>> = unsafe { (*archive).list_files_in_root() };
-    let node = nodes.get(index as usize);
-
-    if let Some(node) = node {
-        return Rc::into_raw(node.clone());
-    } else {
-        panic!("archivefs_directory_archive_get_node_in_root: out of range");
-    }
-}
-
-
-#[no_mangle]
-pub extern "C" fn archivefs_directory_archive_count_nodes_in_directory(
-    archive: *mut DirectoryArchive,
-    prefix: *mut c_char,
-) -> i64 {
-    let prefix = unsafe { CStr::from_ptr(prefix) };
-    let prefix: String = String::from(prefix.to_str().unwrap());
-
-    let nodes: Vec<Rc<Node>> = unsafe { (*archive).get_nodes_in_directory(&prefix) };
-    return nodes.len() as i64;
-}
-
 
 #[no_mangle]
 pub extern "C" fn archivefs_directory_archive_new(raw_path: *mut c_char) -> *mut DirectoryArchive {

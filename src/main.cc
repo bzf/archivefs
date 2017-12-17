@@ -14,39 +14,10 @@ static int getattr_callback(const char *path, struct stat *stbuf) {
 }
 
 int readdir_callback(const char *directory_prefix, void *buf,
-                     fuse_fill_dir_t filler, off_t, struct fuse_file_info *) {
-    filler(buf, ".", NULL, 0);
-    filler(buf, "..", NULL, 0);
-
-    if (strcmp(directory_prefix, "/") == 0) {
-        int nodes_in_root = archivefs_directory_archive_count_nodes_in_root(
-            g_directory_archive);
-
-        for (int i = 0; i < nodes_in_root; i++) {
-            void *node = archivefs_directory_archive_get_node_in_root(
-                g_directory_archive, i);
-            const char *node_name = archivefs_node_name(node);
-            filler(buf, node_name, NULL, 0);
-        }
-    } else {
-        int nodes_in_directory =
-            archivefs_directory_archive_count_nodes_in_directory(
-                g_directory_archive, directory_prefix);
-
-        for (int i = 0; i < nodes_in_directory; i++) {
-            void *node = archivefs_directory_archive_get_node_in_directory(
-                g_directory_archive, directory_prefix, i);
-
-            if (archivefs_node_is_directory(node)) {
-                continue;
-            }
-
-            const char *node_name = archivefs_node_name(node);
-            filler(buf, node_name, NULL, 0);
-        }
-    }
-
-    return 0;
+                     fuse_fill_dir_t filler, off_t offset,
+                     struct fuse_file_info *file_info) {
+    return archivefs_handle_readdir_callback(
+        g_directory_archive, directory_prefix, buf, filler, offset, file_info);
 }
 
 // https://fossies.org/dox/fuse-2.9.7/structfuse__operations.html#a08a085fceedd8770e3290a80aa9645ac

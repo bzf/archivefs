@@ -43,6 +43,8 @@ extern "C" {
     pub fn archive_read_free(_: *mut Archive) -> i64;
 }
 
+pub struct FuseFileInfo {}
+
 pub fn archive_open_and_read_from_path(
     path: &str,
     archive: *mut Archive,
