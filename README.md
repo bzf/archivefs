@@ -19,7 +19,7 @@
   * [libfuse](https://github.com/libfuse/libfuse) (or [osxfuse](https://github.com/osxfuse/osxfuse))
   * [libarchive](https://github.com/libarchive/libarchive)
   * [Rust](https://www.rustup.rs/)
-  * A C++11 compatiable compiler
+  * A C compiler
 
   To build the project you run the `make` command:
   ```sh

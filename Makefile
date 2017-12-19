@@ -2,7 +2,7 @@
 
 UNAME := $(shell uname)
 
-CFLAGS = -Wall -Wextra -Werror -std=c++11 -fdiagnostics-color=auto \
+CFLAGS = -Wall -Wextra -Werror -fdiagnostics-color=auto \
 				 -Iinclude -I/usr/local/include -I/usr/local/opt/libarchive/include
 LDFLAGS = -larchive
 
@@ -16,9 +16,9 @@ endif
 
 all: archivefs
 
-archivefs: src/main.cc libarchivefs | create_build_directory
-	g++ -D_FILE_OFFSET_BITS=64 -L/usr/local/opt/libarchive/lib -L/usr/local/lib \
-		src/main.cc -o archivefs \
+archivefs: src/main.c libarchivefs | create_build_directory
+	gcc -D_FILE_OFFSET_BITS=64 -L/usr/local/opt/libarchive/lib -L/usr/local/lib \
+		src/main.c -o archivefs \
 		$(LDFLAGS) $(CFLAGS) \
 		-L./target/release/ -larchivefs
 
