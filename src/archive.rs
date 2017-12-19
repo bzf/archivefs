@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::os::raw::c_char;
 use std::ffi::CStr;
 use std::ptr;
-use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
 use utils;
 use ffi;
@@ -10,13 +10,13 @@ use node::Node;
 
 pub struct Archive {
     path: String,
-    files: HashMap<String, Rc<Node>>,
+    files: HashMap<String, Arc<Mutex<Node>>>,
 }
 
 impl Archive {
     pub fn new(path: &str) -> Archive {
         let path: String = String::from(path);
-        let mut files: HashMap<String, Rc<Node>> = HashMap::new();
+        let mut files: HashMap<String, Arc<Mutex<Node>>> = HashMap::new();
 
         let archive: *mut ffi::Archive = unsafe { ffi::archive_read_new() };
         unsafe {
@@ -47,7 +47,7 @@ impl Archive {
 
             let mut archive_pathname = utils::correct_path(archive_pathname);
             archive_pathname.insert(0, '/');
-            files.insert(archive_pathname, Rc::new(node));
+            files.insert(archive_pathname, Arc::new(Mutex::new(node)));
 
             unsafe { ffi::archive_read_data_skip(archive) };
         }
@@ -60,17 +60,7 @@ impl Archive {
         };
     }
 
-    pub fn list_files_in_root(&self) -> Vec<String> {
-        let mut archive: Vec<String> = vec![];
-
-        for filepath in self.files.keys() {
-            archive.push(filepath.clone());
-        }
-
-        return archive;
-    }
-
-    pub fn get_node_for_path(&self, path: &str) -> Option<Rc<Node>> {
+    pub fn get_node_for_path(&self, path: &str) -> Option<Arc<Mutex<Node>>> {
         for (filepath, node) in &self.files {
             if filepath == path {
                 return Some(node.clone());
@@ -80,8 +70,8 @@ impl Archive {
         return None;
     }
 
-    pub fn get_nodes_in_directory(&self, directory_prefix: &str) -> Vec<Rc<Node>> {
-        let mut nodes: Vec<Rc<Node>> = vec![];
+    pub fn get_nodes_in_directory(&self, directory_prefix: &str) -> Vec<Arc<Mutex<Node>>> {
+        let mut nodes: Vec<Arc<Mutex<Node>>> = vec![];
 
         for (filepath, node) in &self.files {
             let mut path_with_directory_prefix: String = filepath.replace(directory_prefix, "");

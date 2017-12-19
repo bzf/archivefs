@@ -20,36 +20,19 @@ int readdir_callback(const char *directory_prefix, void *buf,
         g_directory_archive, directory_prefix, buf, filler, offset, file_info);
 }
 
-// https://fossies.org/dox/fuse-2.9.7/structfuse__operations.html#a08a085fceedd8770e3290a80aa9645ac
-int open_callback(const char *path, fuse_file_info *) {
-    void *node = archivefs_directory_archive_get_node_for_path(
-        g_directory_archive, path);
-    if (node != nullptr) {
-        archivefs_node_open(node);
-    }
-
-    return 0;
+int open_callback(const char *path, fuse_file_info *file_info) {
+    return archivefs_handle_open_callback(g_directory_archive, path, file_info);
 }
 
 int read_callback(const char *path, char *buf, size_t size, off_t offset,
-                  fuse_file_info *) {
-    void *node = archivefs_directory_archive_get_node_for_path(
-        g_directory_archive, path);
-    if (node) {
-        return archivefs_node_write_to_buffer(node, buf, size, offset);
-    } else {
-        return -ENOENT;
-    }
+                  fuse_file_info *file_info) {
+    return archivefs_handle_read_callback(g_directory_archive, path, buf, size,
+                                          offset, file_info);
 }
 
-int release_callback(const char *path, fuse_file_info *) {
-    void *node = archivefs_directory_archive_get_node_for_path(
-        g_directory_archive, path);
-    if (node) {
-        return archivefs_node_close(node);
-    } else {
-        return -ENOENT;
-    }
+int release_callback(const char *path, fuse_file_info *file_info) {
+    return archivefs_handle_release_callback(g_directory_archive, path,
+                                             file_info);
 }
 
 typedef struct archivefs_conf {
