@@ -11,9 +11,6 @@ int archivefs_handle_readdir_callback(void *directory_archive,
                                       fuse_fill_dir_t filler, off_t,
                                       struct fuse_file_info *);
 
-int archivefs_handle_open_callback(void *directory_archive, const char *path,
-                                   struct fuse_file_info *);
-
 int archivefs_handle_read_callback(void *directory_archive, const char *path,
                                    char *buffer, size_t size, off_t offset,
                                    struct fuse_file_info *);

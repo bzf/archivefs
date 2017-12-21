@@ -11,10 +11,8 @@ use std::boxed::Box;
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_void, c_char};
 use std::ptr;
-use std::sync::{Arc, Mutex};
 use libc::{stat, off_t};
 use ffi::FuseFileInfo;
-use node::Node;
 use directory_archive::DirectoryArchive;
 
 #[no_mangle]
@@ -91,28 +89,6 @@ pub extern "C" fn archivefs_handle_readdir_callback(
             let node_ptr = node_name.into_raw();
             filler(buffer, node_ptr, ptr::null(), 0);
             let _ = unsafe { CString::from_raw(node_ptr) };
-        }
-    }
-
-    return 0;
-}
-
-#[no_mangle]
-pub extern "C" fn archivefs_handle_open_callback(
-    directory_archive: *mut DirectoryArchive,
-    path: *const c_char,
-    _file_info: *mut FuseFileInfo,
-) -> i32 {
-    let path = unsafe { CStr::from_ptr(path) };
-    let path: String = String::from(path.to_str().unwrap());
-
-    let node: Option<Arc<Mutex<Node>>> = unsafe { (*directory_archive).get_node_for_path(&path) };
-
-    if let Some(node) = node {
-        let mut lock = node.try_lock();
-        if let Ok(ref mut mutex) = lock {
-            let mut node = &mut **mutex;
-            node.open();
         }
     }
 

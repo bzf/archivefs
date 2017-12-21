@@ -19,10 +19,6 @@ int readdir_callback(const char *directory_prefix, void *buf,
         g_directory_archive, directory_prefix, buf, filler, offset, file_info);
 }
 
-int open_callback(const char *path, struct fuse_file_info *file_info) {
-    return archivefs_handle_open_callback(g_directory_archive, path, file_info);
-}
-
 int read_callback(const char *path, char *buf, size_t size, off_t offset,
                   struct fuse_file_info *file_info) {
     return archivefs_handle_read_callback(g_directory_archive, path, buf, size,
@@ -45,7 +41,6 @@ static struct fuse_opt archivefs_opts[] = {
 
 static struct fuse_operations operations = {
     .getattr = getattr_callback,
-    .open = open_callback,
     .read = read_callback,
     .readdir = readdir_callback,
     .release = release_callback,

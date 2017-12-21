@@ -46,7 +46,7 @@ impl Node {
         return unsafe { ffi::archive_entry_size(self.entry) };
     }
 
-    pub fn open(&mut self) {
+    fn open(&mut self) {
         if let Some(_) = self.archive {
             return;
         }
@@ -77,15 +77,19 @@ impl Node {
     }
 
     pub fn write_to_buffer(&mut self, buffer: *mut c_char, size: size_t, offset: off_t) -> size_t {
-        if let Some(archive) = self.archive {
-            if offset != -1 {
-                unsafe { ffi::archive_seek_data(archive, offset, 0) };
-            }
+        match self.archive {
+            Some(archive) => {
+                if offset != -1 {
+                    unsafe { ffi::archive_seek_data(archive, offset, 0) };
+                }
 
-            let bytes_written = unsafe { ffi::archive_read_data(archive, buffer, size) };
-            return bytes_written as size_t;
-        } else {
-            panic!("Must open archive before writing from it");
+                let bytes_written = unsafe { ffi::archive_read_data(archive, buffer, size) };
+                return bytes_written as size_t;
+            }
+            None => {
+                self.open();
+                return self.write_to_buffer(buffer, size, offset);
+            }
         }
     }
 
