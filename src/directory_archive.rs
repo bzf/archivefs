@@ -66,7 +66,8 @@ impl DirectoryArchive {
             }
 
             if path.starts_with(&filename_with_leading_slash) {
-                let subpath_for_archive: String = path.replace(&filename_with_leading_slash, "");
+                let subpath_for_archive: String =
+                    path.replacen(&filename_with_leading_slash, "", 1);
                 return archive.get_node_for_path(&subpath_for_archive);
             }
         }
