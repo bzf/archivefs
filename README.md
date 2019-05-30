@@ -30,5 +30,17 @@
   `archivefs` does not handle nested directories inside an archive file
   properly. For now only flat archvies are compatiable.
 
+  If you get the following error message you can try setting the
+  `LD_LIBRARY_PATH` environment variable to the path of the `libarchivefs`
+  library:
+
+  ```
+  $ ./archivefs
+  ./archivefs: error while loading shared libraries: libarchivefs.so: cannot open shared object file: No such file or directory
+  $ LD_LIBRARY_PATH=./target/release/deps ./archivefs
+  Need to set which archive you want to mount
+  ```
+
+
 ## Good links
   * https://fossies.org/dox/fuse-2.9.7/fuse__compat_8h_source.html
