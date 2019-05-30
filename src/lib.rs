@@ -37,7 +37,8 @@ pub fn archivefs_handle_getattr_callback(
                 }
             };
 
-            unsafe { (*stbuf).st_nlink = (node.is_directory() as u16) + 1 };
+            let nlink = if node.is_directory() { 0 } else { 1 };
+            unsafe { (*stbuf).st_nlink = nlink + 1 };
             if !node.is_directory() {
                 unsafe { (*stbuf).st_size = node.size() };
             }
