@@ -3,7 +3,7 @@
 UNAME := $(shell uname)
 
 CFLAGS = -Wall -Wextra -Werror -fdiagnostics-color=auto \
-				 -Iinclude -I/usr/local/include -I/usr/local/opt/libarchive/include
+				 -Iinclude -I/usr/local/include/osxfuse -I/usr/local/opt/libarchive/include
 LDFLAGS = -larchive
 
 ifeq ($(UNAME),Darwin)

@@ -20,9 +20,11 @@
   * [libarchive](https://github.com/libarchive/libarchive)
   * [Rust](https://www.rustup.rs/)
   * A C compiler
+  * Homebrew
 
   To build the project you run the `make` command:
   ```sh
+  $ brew bundle # Installs dependencies for building the project
   $ make
   ```
 
