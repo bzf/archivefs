@@ -5,3 +5,4 @@ examples/
 /target/
 **/*.rs.bk
 Cargo.lock
+dist/

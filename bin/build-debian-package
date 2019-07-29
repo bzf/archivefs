@@ -1,0 +1,13 @@
+#!/bin/bash
+
+DIST_PATH="$(pwd)/dist"
+
+if [ ! "$(command -v docker)" ]; then
+  >&2 echo " You need to have Docker installed to run this script."
+  exit 1;
+fi
+
+mkdir -p "$DIST_PATH"
+
+docker build -t archivefs-debian .
+docker run --rm -v "$DIST_PATH":/output -t archivefs-debian

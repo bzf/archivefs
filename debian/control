@@ -1,0 +1,11 @@
+Package: archivefs
+Version: 0.0.1-dev
+Section: base
+Priority: optional
+Architecture: amd64
+Depends: libarchive13 (>= 3.2.2-2+deb9u1), fuse (>= 2.9.7-1+deb9u2)
+Maintainer: André Ligné <hi@andreligne.se>
+Description: archivefs
+ FUSE program for mounting folders with archives onto the filesystem
+ and make it easier to browse and extract content from them using regular
+ CLI tools.

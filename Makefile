@@ -20,7 +20,8 @@ archivefs: src/main.c libarchivefs | create_build_directory
 	gcc -D_FILE_OFFSET_BITS=64 -L/usr/local/opt/libarchive/lib -L/usr/local/lib \
 		src/main.c -o archivefs \
 		$(LDFLAGS) $(CFLAGS) \
-		-L./target/release/ -larchivefs
+		-L./target/release/ -larchivefs \
+		-Wl,-R/usr/local/opt/archivefs/lib
 
 create_build_directory:
 	mkdir -p build/
