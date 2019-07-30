@@ -1,7 +1,7 @@
 [package]
 name = "archivefs"
-version = "0.1.0"
-authors = ["André Ligné <hello@bzf.se>"]
+version = "0.0.1"
+authors = ["André Ligné <hi@andreligne.se>"]
 build = "build.rs"
 
 [dependencies]
