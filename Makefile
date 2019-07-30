@@ -11,7 +11,7 @@ ifeq ($(UNAME),Darwin)
 	CFLAGS += -D_DARWIN_USE_64_BIT_INODE
 endif
 ifeq ($(UNAME),Linux)
-	LDFLAGS += -lfuse
+	LDFLAGS += -lfuse -Wl,-R/usr/local/opt/archivefs/lib
 endif
 
 all: archivefs
@@ -20,8 +20,7 @@ archivefs: src/main.c libarchivefs | create_build_directory
 	gcc -D_FILE_OFFSET_BITS=64 -L/usr/local/opt/libarchive/lib -L/usr/local/lib \
 		src/main.c -o archivefs \
 		$(LDFLAGS) $(CFLAGS) \
-		-L./target/release/ -larchivefs \
-		-Wl,-R/usr/local/opt/archivefs/lib
+		-L./target/release/ -larchivefs
 
 create_build_directory:
 	mkdir -p build/
