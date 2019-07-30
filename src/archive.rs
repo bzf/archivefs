@@ -9,7 +9,6 @@ use ffi;
 use node::Node;
 
 pub struct Archive {
-    path: String,
     files: HashMap<String, Arc<Mutex<Node>>>,
 }
 
@@ -55,7 +54,6 @@ impl Archive {
         unsafe { ffi::archive_read_free(archive) };
 
         return Archive {
-            path: path,
             files: files,
         };
     }

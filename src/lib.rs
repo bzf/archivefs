@@ -114,7 +114,7 @@ pub extern "C" fn archivefs_handle_read_callback(
         Some(node) => {
             let mut lock = node.try_lock();
             if let Ok(ref mut mutex) = lock {
-                let mut node = &mut **mutex;
+                let node = &mut **mutex;
                 let result = node.write_to_buffer(buffer, size, offset) as i32;
                 return result;
             } else {
@@ -142,7 +142,7 @@ pub extern "C" fn archivefs_handle_release_callback(
         Some(node) => {
             let mut lock = node.try_lock();
             if let Ok(ref mut mutex) = lock {
-                let mut node = &mut **mutex;
+                let node = &mut **mutex;
                 return node.close() as i32;
             } else {
                 return -libc::ENOENT;
