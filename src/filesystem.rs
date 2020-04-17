@@ -3,6 +3,7 @@ use tempdir::TempDir;
 
 use directory::Directory;
 use file::File;
+use filesystem_node::FilesystemNode;
 
 #[derive(Debug)]
 pub struct Filesystem {
@@ -56,6 +57,14 @@ impl Filesystem {
         Some(current_directory)
     }
 
+    pub fn get_node(&self, path: &str) -> Option<FilesystemNode> {
+        if path == "/" {
+            Some(FilesystemNode::Directory(self.root_directory().clone()))
+        } else {
+            self.root_directory().get_node(path)
+        }
+    }
+
     fn root_directory(&self) -> Directory {
         Directory::new(&self.path)
     }
@@ -75,6 +84,45 @@ fn test_getting_file_in_root() {
         Some(file) => {
             assert_eq!(file.filename(), "my-temporary-note.txt");
             assert_eq!(file.size(), 25);
+        }
+        _ => assert!(false, "Expected a file"),
+    }
+}
+
+#[test]
+fn test_getting_root_directory_node() {
+    let tmp_dir = TempDir::new("example").unwrap();
+    let sub_dir_path = tmp_dir.path().join("subdir");
+    std::fs::create_dir(&sub_dir_path).unwrap();
+
+    let file_path = sub_dir_path.join("foo.txt");
+    let mut tmp_file = std::fs::File::create(file_path).unwrap();
+    writeln!(tmp_file, "foo").unwrap();
+
+    let filesystem = Filesystem::new(tmp_dir.path().to_str().unwrap());
+
+    match filesystem.get_node("/") {
+        Some(FilesystemNode::Directory(dir)) => {
+            assert_eq!(dir.name(), "example");
+        }
+        _ => assert!(false, "Expected root directory"),
+    }
+}
+
+#[test]
+fn test_getting_root_file_node() {
+    let tmp_dir = TempDir::new("example").unwrap();
+
+    let file_path = tmp_dir.path().join("foo.txt");
+    let mut tmp_file = std::fs::File::create(file_path).unwrap();
+    writeln!(tmp_file, "foo").unwrap();
+
+    let filesystem = Filesystem::new(tmp_dir.path().to_str().unwrap());
+
+    match filesystem.get_node("/foo.txt") {
+        Some(FilesystemNode::File(file)) => {
+            assert_eq!(file.filename(), "foo.txt");
+            assert_eq!(file.size(), 4);
         }
         _ => assert!(false, "Expected a file"),
     }

@@ -40,7 +40,6 @@ fn test_file_size() {
     let content = "Brian was here. Briefly.";
     writeln!(tmp_file, "{}", content).unwrap();
 
-    println!("{:?}", file_path);
     let file = File::new(file_path.as_path().to_str().unwrap());
     assert_eq!((content.len() + 1) as u64, file.size());
 }
@@ -54,7 +53,6 @@ fn test_file_name() {
 
     writeln!(tmp_file, "Hello").unwrap();
 
-    println!("{:?}", file_path);
     let file = File::new(file_path.as_path().to_str().unwrap());
     assert_eq!(file.filename(), "my-temporary-note.txt");
 }

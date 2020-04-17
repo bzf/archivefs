@@ -2,12 +2,13 @@ extern crate libc;
 extern crate tempdir;
 extern crate walkdir;
 
-mod directory;
-mod file;
 mod archive;
+mod directory;
 mod directory_archive;
 mod ffi;
+mod file;
 mod filesystem;
+mod filesystem_node;
 mod node;
 mod utils;
 
