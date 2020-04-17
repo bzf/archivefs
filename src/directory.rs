@@ -7,33 +7,12 @@ use readable::Readable;
 pub struct Directory {
     dirpath: String,
 }
+
 impl Directory {
     pub fn new(dirpath: &str) -> Directory {
         Directory {
             dirpath: String::from(dirpath),
         }
-    }
-
-    pub fn clone(&self) -> Directory {
-        Directory::new(&self.dirpath)
-    }
-
-    pub fn list_files(&self) -> Vec<File> {
-        let entries = std::fs::read_dir(&self.dirpath).unwrap();
-
-        entries
-            .filter(|e| !e.as_ref().unwrap().path().is_dir())
-            .map(|e| File::new(&e.unwrap().path().to_str().unwrap()))
-            .collect()
-    }
-
-    pub fn list_subdirectories(&self) -> Vec<Directory> {
-        let entries = std::fs::read_dir(&self.dirpath).unwrap();
-
-        entries
-            .filter(|e| e.as_ref().unwrap().path().is_dir())
-            .map(|e| Directory::new(&e.unwrap().path().to_str().unwrap()))
-            .collect()
     }
 
     fn node_map(&self) -> std::collections::HashMap<String, FilesystemNode> {
@@ -50,7 +29,7 @@ impl Directory {
         for dir in self.list_subdirectories() {
             nodes.insert(
                 String::from(dir.name()),
-                FilesystemNode::Directory(dir.clone()),
+                FilesystemNode::Browseable(dir.clone()),
             );
         }
 
@@ -63,32 +42,71 @@ impl Directory {
 }
 
 impl Browseable for Directory {
+    fn clone(&self) -> Box<dyn Browseable> {
+        Box::new(Directory::new(&self.dirpath))
+    }
+
     fn name(&self) -> &str {
         self.path().file_stem().unwrap().to_str().unwrap()
     }
 
-    fn get_file(&self, filename: &str) -> Option<Box<dyn Readable>> {
-        let files = self.list_files();
+    fn list_subdirectories(&self) -> Vec<Box<dyn Browseable>> {
+        let entries = std::fs::read_dir(&self.dirpath).unwrap();
 
-        match files.iter().find(|file| file.filename() == filename) {
-            None => None,
-            Some(file) => Some(file.clone()),
+        let mut subdirectories: Vec<Box<dyn Browseable>> = vec![];
+
+        for node in entries {
+            let n = node.unwrap();
+
+            if n.path().is_dir() {
+                subdirectories.push(Box::new(Directory::new(n.path().to_str().unwrap())));
+            }
         }
+
+        subdirectories
     }
 
-    fn get_subdirectory(&self, name: &str) -> Option<Directory> {
-        let subdirectories = self.list_subdirectories();
-        let subdirectory: Option<&Directory> = subdirectories.iter().find(|dir| dir.name() == name);
+    fn list_files(&self) -> Vec<Box<dyn Readable>> {
+        let entries = std::fs::read_dir(&self.dirpath).unwrap();
 
-        match subdirectory {
-            None => None,
-            Some(dir) => Some(dir.clone()),
+        let mut files: Vec<Box<dyn Readable>> = vec![];
+
+        for node in entries {
+            let n = node.unwrap();
+
+            if !n.path().is_dir() {
+                files.push(Box::new(File::new(n.path().to_str().unwrap())));
+            }
         }
+
+        files
+    }
+
+    fn get_file(&self, filename: &str) -> Option<Box<dyn Readable>> {
+        for file in self.list_files() {
+            if file.filename() == filename {
+                return Some(file.clone());
+            }
+        }
+
+        None
+    }
+
+    fn get_subdirectory(&self, name: &str) -> Option<Box<dyn Browseable>> {
+        let subdirectories = self.list_subdirectories();
+
+        for subdirectory in subdirectories {
+            if subdirectory.name() == name {
+                return Some(subdirectory.clone());
+            }
+        }
+
+        None
     }
 
     fn get_node(&self, path: &str) -> Option<FilesystemNode> {
         if path == "/" {
-            return Some(FilesystemNode::Directory(self.clone()));
+            return Some(FilesystemNode::Browseable(self.clone()));
         }
 
         let fragments: Vec<&str> = path.split('/').filter(|x| x != &"").collect();
@@ -115,20 +133,17 @@ impl Browseable for Directory {
     }
 
     fn list_nodes(&self) -> Vec<FilesystemNode> {
-        let mut files: Vec<FilesystemNode> = self
-            .list_files()
-            .iter()
-            .map(|file| FilesystemNode::Readable(file.clone()))
-            .collect();
+        let mut nodes: Vec<FilesystemNode> = vec![];
 
-        let subdirectories: Vec<FilesystemNode> = self
-            .list_subdirectories()
-            .iter()
-            .map(|directory| FilesystemNode::Directory(directory.clone()))
-            .collect();
+        for file in self.list_files() {
+            nodes.push(FilesystemNode::Readable(file));
+        }
 
-        files.extend(subdirectories);
-        files
+        for directory in self.list_subdirectories() {
+            nodes.push(FilesystemNode::Browseable(directory));
+        }
+
+        nodes
     }
 }
 
@@ -146,7 +161,7 @@ mod tests {
         let directory = Directory::new(tmp_dir.path().to_str().unwrap());
 
         match directory.get_node("/hello") {
-            Some(FilesystemNode::Directory(dir)) => assert_eq!(dir.name(), "hello"),
+            Some(FilesystemNode::Browseable(dir)) => assert_eq!(dir.name(), "hello"),
             _ => unreachable!(),
         }
     }
@@ -160,7 +175,7 @@ mod tests {
         let directory = Directory::new(tmp_dir.path().to_str().unwrap());
 
         match directory.get_node("/hello/world") {
-            Some(FilesystemNode::Directory(dir)) => assert_eq!(dir.name(), "world"),
+            Some(FilesystemNode::Browseable(dir)) => assert_eq!(dir.name(), "world"),
             _ => unreachable!(),
         }
     }
@@ -214,13 +229,13 @@ mod tests {
         assert_eq!(directory.list_nodes().len(), 2);
         match directory.list_nodes().first() {
             Some(FilesystemNode::Readable(file)) => assert_eq!(file.filename(), "foo.txt"),
-            Some(FilesystemNode::Directory(dir)) => assert_eq!(dir.name(), "hello"),
+            Some(FilesystemNode::Browseable(dir)) => assert_eq!(dir.name(), "hello"),
             _ => unreachable!(),
         }
 
         match directory.list_nodes().last() {
             Some(FilesystemNode::Readable(file)) => assert_eq!(file.filename(), "foo.txt"),
-            Some(FilesystemNode::Directory(dir)) => assert_eq!(dir.name(), "hello"),
+            Some(FilesystemNode::Browseable(dir)) => assert_eq!(dir.name(), "hello"),
             _ => unreachable!(),
         }
     }

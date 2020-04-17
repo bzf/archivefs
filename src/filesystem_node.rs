@@ -1,7 +1,7 @@
-use directory::Directory;
+use browseable::Browseable;
 use readable::Readable;
 
 pub enum FilesystemNode {
     Readable(Box<dyn Readable>),
-    Directory(Directory),
+    Browseable(Box<dyn Browseable>),
 }

@@ -1,7 +1,7 @@
 use browseable::Browseable;
 use directory::Directory;
-use file::File;
 use filesystem_node::FilesystemNode;
+use readable::Readable;
 
 #[derive(Debug)]
 pub struct Filesystem {
@@ -15,7 +15,7 @@ impl Filesystem {
         }
     }
 
-    pub fn list_files(&self, path: &str) -> Vec<File> {
+    pub fn list_files(&self, path: &str) -> Vec<Box<dyn Readable>> {
         if path == "/" {
             self.root_directory().list_files()
         } else {
@@ -26,7 +26,7 @@ impl Filesystem {
         }
     }
 
-    pub fn get_directory(&self, path: &str) -> Option<Directory> {
+    pub fn get_directory(&self, path: &str) -> Option<Box<dyn Browseable>> {
         if path == "/" {
             return Some(self.root_directory());
         }
@@ -47,14 +47,14 @@ impl Filesystem {
 
     pub fn get_node(&self, path: &str) -> Option<FilesystemNode> {
         if path == "/" {
-            Some(FilesystemNode::Directory(self.root_directory().clone()))
+            Some(FilesystemNode::Browseable(self.root_directory().clone()))
         } else {
             self.root_directory().get_node(path)
         }
     }
 
-    fn root_directory(&self) -> Directory {
-        Directory::new(&self.path)
+    fn root_directory(&self) -> Box<dyn Browseable> {
+        Box::new(Directory::new(&self.path))
     }
 }
 
@@ -79,7 +79,7 @@ mod tests {
         let filesystem = Filesystem::new(tmp_dir.path().to_str().unwrap());
 
         match filesystem.get_node("/") {
-            Some(FilesystemNode::Directory(dir)) => {
+            Some(FilesystemNode::Browseable(dir)) => {
                 assert_eq!(dir.name(), "example");
             }
             _ => assert!(false, "Expected root directory"),
@@ -114,7 +114,7 @@ mod tests {
         writeln!(tmp_file, "Brian was here. Briefly.").unwrap();
 
         let filesystem = Filesystem::new(tmp_dir.path().to_str().unwrap());
-        let files_in_root: Vec<File> = filesystem.list_files("/");
+        let files_in_root: Vec<Box<dyn Readable>> = filesystem.list_files("/");
         assert_eq!(files_in_root.len(), 1);
 
         let filenames_in_root: Vec<&str> = files_in_root.iter().map(|x| x.filename()).collect();
@@ -132,7 +132,7 @@ mod tests {
         writeln!(tmp_file, "foo").unwrap();
 
         let filesystem = Filesystem::new(tmp_dir.path().to_str().unwrap());
-        let files_in_root: Vec<File> = filesystem.list_files("subdir");
+        let files_in_root: Vec<Box<dyn Readable>> = filesystem.list_files("subdir");
         assert_eq!(files_in_root.len(), 1);
 
         let filenames_in_root: Vec<&str> = files_in_root.iter().map(|x| x.filename()).collect();

@@ -14,7 +14,6 @@ mod node;
 mod readable;
 mod utils;
 
-use browseable::Browseable;
 use directory_archive::DirectoryArchive;
 use ffi::FuseFileInfo;
 use filesystem::Filesystem;
@@ -43,7 +42,7 @@ pub fn archivefs_handle_getattr_callback(
                 (*stbuf).st_size = file.size() as i64;
             },
 
-            FilesystemNode::Directory(dir) => unsafe {
+            FilesystemNode::Browseable(dir) => unsafe {
                 (*stbuf).st_mode = libc::S_IFDIR | 0o0777;
                 (*stbuf).st_nlink = 1;
                 (*stbuf).st_size = dir.size() as i64;
@@ -92,7 +91,7 @@ pub extern "C" fn archivefs_handle_readdir_callback(
                     filler(buffer, node_ptr, ptr::null(), 0);
                     let _ = unsafe { CString::from_raw(node_ptr) };
                 }
-                FilesystemNode::Directory(dir) => {
+                FilesystemNode::Browseable(dir) => {
                     let node_name: &str = &dir.name();
                     let node_name = CString::new(node_name).unwrap();
 
