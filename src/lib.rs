@@ -1,19 +1,21 @@
 extern crate libc;
+extern crate tempdir;
 extern crate walkdir;
 
-mod utils;
-mod node;
 mod archive;
-mod ffi;
 mod directory_archive;
+mod ffi;
+mod filesystem;
+mod node;
+mod utils;
 
+use directory_archive::DirectoryArchive;
+use ffi::FuseFileInfo;
+use libc::{off_t, stat};
 use std::boxed::Box;
 use std::ffi::{CStr, CString};
-use std::os::raw::{c_void, c_char};
+use std::os::raw::{c_char, c_void};
 use std::ptr;
-use libc::{stat, off_t};
-use ffi::FuseFileInfo;
-use directory_archive::DirectoryArchive;
 
 #[no_mangle]
 pub fn archivefs_handle_getattr_callback(
