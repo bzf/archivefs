@@ -18,7 +18,7 @@ impl Filesystem {
     }
 
     pub fn list_files(&self, path: &str) -> Vec<File> {
-        if (path == "/") {
+        if path == "/" {
             self.root_directory().list_files()
         } else {
             match self.get_directory(&path) {
@@ -29,7 +29,7 @@ impl Filesystem {
     }
 
     fn get_file(&self, path: &str) -> Option<File> {
-        let fragments: Vec<&str> = path.split('/').collect();
+        let fragments: Vec<&str> = path.split('/').filter(|x| x != &"").collect();
 
         match fragments.as_slice() {
             [directories, filename] => {
@@ -41,13 +41,16 @@ impl Filesystem {
         }
     }
 
-    fn get_directory(&self, path: &str) -> Option<Directory> {
-        let fragments = path.split('/');
-        let vec: Vec<&str> = fragments.collect();
+    pub fn get_directory(&self, path: &str) -> Option<Directory> {
+        if path == "/" {
+            return Some(self.root_directory());
+        }
+
+        let fragments: Vec<&str> = path.split('/').filter(|x| x != &"").collect();
 
         let mut current_directory = self.root_directory();
 
-        for directory in vec {
+        for directory in fragments {
             match current_directory.get_subdirectory(directory) {
                 None => return None,
                 Some(dir) => current_directory = dir,

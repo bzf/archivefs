@@ -66,15 +66,21 @@ impl Directory {
     }
 
     pub fn get_node(&self, path: &str) -> Option<FilesystemNode> {
+        if path == "/" {
+            return Some(FilesystemNode::Directory(self.clone()));
+        }
+
         let fragments: Vec<&str> = path.split('/').filter(|x| x != &"").collect();
 
         match fragments.as_slice() {
             [] => None,
+
             [filename] => {
                 let mut foo = self.node_map();
                 let f = String::from(*filename);
                 foo.remove(&f)
             }
+
             rest => {
                 let first = rest.first().unwrap();
                 let rest_path = &rest[1..].join("/");

@@ -15,6 +15,7 @@ mod utils;
 use directory_archive::DirectoryArchive;
 use ffi::FuseFileInfo;
 use filesystem::Filesystem;
+use filesystem_node::FilesystemNode;
 use libc::{off_t, stat};
 use std::boxed::Box;
 use std::ffi::{CStr, CString};
@@ -23,31 +24,27 @@ use std::ptr;
 
 #[no_mangle]
 pub fn archivefs_handle_getattr_callback(
-    directory_archive: *mut DirectoryArchive,
+    filesystem_ptr: *mut Filesystem,
     path: *mut c_char,
     stbuf: *mut stat,
 ) -> i32 {
     let path = unsafe { CStr::from_ptr(path) };
     let path: &str = path.to_str().unwrap();
+    let filesystem: &Filesystem = unsafe { &*filesystem_ptr };
 
-    if let Some(node) = unsafe { (*directory_archive).get_node_for_path(&path) } {
-        let mut lock = node.lock();
-        if let Ok(ref mut mutex) = lock {
-            let node = &mut **mutex;
+    if let Some(fs_node) = filesystem.get_node(path) {
+        match fs_node {
+            FilesystemNode::File(file) => unsafe {
+                (*stbuf).st_mode = libc::S_IFREG | 0o0777;
+                (*stbuf).st_nlink = 2;
+                (*stbuf).st_size = file.size() as i64;
+            },
 
-            unsafe {
-                (*stbuf).st_mode = if node.is_directory() {
-                    libc::S_IFDIR | 0o0777
-                } else {
-                    libc::S_IFREG | 0o0777
-                }
-            };
-
-            let nlink = if node.is_directory() { 0 } else { 1 };
-            unsafe { (*stbuf).st_nlink = nlink + 1 };
-            if !node.is_directory() {
-                unsafe { (*stbuf).st_size = node.size() };
-            }
+            FilesystemNode::Directory(dir) => unsafe {
+                (*stbuf).st_mode = libc::S_IFDIR | 0o0777;
+                (*stbuf).st_nlink = 1;
+                (*stbuf).st_size = dir.size() as i64;
+            },
         }
 
         return 0;
@@ -64,7 +61,7 @@ pub fn archivefs_handle_getattr_callback(
 
 #[no_mangle]
 pub extern "C" fn archivefs_handle_readdir_callback(
-    directory_archive: *mut DirectoryArchive,
+    filesystem_ptr: *mut Filesystem,
     directory_prefix: *const c_char,
     buffer: *mut c_void,
     filler: extern "C" fn(*mut c_void, *const c_char, *const c_void, off_t) -> i32,
@@ -76,26 +73,31 @@ pub extern "C" fn archivefs_handle_readdir_callback(
     let path = CString::new("..").unwrap();
     filler(buffer, path.as_ptr(), ptr::null(), 0);
 
+    let filesystem: &Filesystem = unsafe { &*filesystem_ptr };
+
     let directory_prefix = unsafe { CStr::from_ptr(directory_prefix) };
     let directory_prefix: String = String::from(directory_prefix.to_str().unwrap());
 
-    let nodes = if directory_prefix == "/" {
-        unsafe { (*directory_archive).list_files_in_root() }
-    } else {
-        unsafe { (*directory_archive).get_nodes_in_directory(&directory_prefix) }
-    };
+    if let Some(directory) = filesystem.get_directory(&directory_prefix) {
+        for node in directory.list_nodes() {
+            match node {
+                FilesystemNode::File(file) => {
+                    let node_name: &str = &file.filename();
+                    let node_name = CString::new(node_name).unwrap();
 
-    for node in nodes {
-        let mut lock = node.try_lock();
+                    let node_ptr = node_name.into_raw();
+                    filler(buffer, node_ptr, ptr::null(), 0);
+                    let _ = unsafe { CString::from_raw(node_ptr) };
+                }
+                FilesystemNode::Directory(dir) => {
+                    let node_name: &str = &dir.name();
+                    let node_name = CString::new(node_name).unwrap();
 
-        if let Ok(ref mut mutex) = lock {
-            let node = &mut **mutex;
-            let node_name: &str = &node.name;
-            let node_name = CString::new(node_name).unwrap();
-
-            let node_ptr = node_name.into_raw();
-            filler(buffer, node_ptr, ptr::null(), 0);
-            let _ = unsafe { CString::from_raw(node_ptr) };
+                    let node_ptr = node_name.into_raw();
+                    filler(buffer, node_ptr, ptr::null(), 0);
+                    let _ = unsafe { CString::from_raw(node_ptr) };
+                }
+            }
         }
     }
 

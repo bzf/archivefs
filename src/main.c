@@ -10,14 +10,14 @@ static void *g_directory_archive = NULL;
 static void *g_filesystem = NULL;
 
 static int getattr_callback(const char *path, struct stat *stbuf) {
-    return archivefs_handle_getattr_callback(g_directory_archive, path, stbuf);
+    return archivefs_handle_getattr_callback(g_filesystem, path, stbuf);
 }
 
 int readdir_callback(const char *directory_prefix, void *buf,
                      fuse_fill_dir_t filler, off_t offset,
                      struct fuse_file_info *file_info) {
     return archivefs_handle_readdir_callback(
-        g_directory_archive, directory_prefix, buf, filler, offset, file_info);
+        g_filesystem, directory_prefix, buf, filler, offset, file_info);
 }
 
 int read_callback(const char *path, char *buf, size_t size, off_t offset,

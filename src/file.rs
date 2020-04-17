@@ -1,6 +1,7 @@
 use std::io::Write;
 use tempdir::TempDir;
 
+#[derive(Debug)]
 pub struct File {
     filepath: String,
 }
