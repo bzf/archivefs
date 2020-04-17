@@ -10,6 +10,7 @@ mod file;
 mod filesystem;
 mod filesystem_node;
 mod node;
+mod readable;
 mod utils;
 
 use directory_archive::DirectoryArchive;
@@ -17,6 +18,7 @@ use ffi::FuseFileInfo;
 use filesystem::Filesystem;
 use filesystem_node::FilesystemNode;
 use libc::{off_t, stat};
+use readable::Readable;
 use std::boxed::Box;
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_void};

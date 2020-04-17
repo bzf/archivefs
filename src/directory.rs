@@ -3,6 +3,7 @@ use tempdir::TempDir;
 
 use file::File;
 use filesystem_node::FilesystemNode;
+use readable::Readable;
 
 #[derive(Debug)]
 pub struct Directory {

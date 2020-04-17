@@ -2,8 +2,10 @@ use std::io::Write;
 use tempdir::TempDir;
 
 use directory::Directory;
+use directory_archive::DirectoryArchive;
 use file::File;
 use filesystem_node::FilesystemNode;
+use readable::Readable;
 
 #[derive(Debug)]
 pub struct Filesystem {

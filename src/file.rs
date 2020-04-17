@@ -4,6 +4,8 @@ use tempdir::TempDir;
 use libc::{off_t, size_t};
 use std::os::raw::c_char;
 
+use readable::Readable;
+
 #[derive(Debug)]
 pub struct File {
     filepath: String,
@@ -20,24 +22,26 @@ impl File {
         File::new(&self.filepath)
     }
 
-    pub fn filename(&self) -> &str {
+    fn path(&self) -> &std::path::Path {
+        std::path::Path::new(&self.filepath)
+    }
+}
+
+impl Readable for File {
+    fn filename(&self) -> &str {
         self.path().file_name().unwrap().to_str().unwrap()
     }
 
-    pub fn size(&self) -> u64 {
+    fn size(&self) -> u64 {
         let metadata = std::fs::metadata(&self.filepath).unwrap();
         metadata.len()
     }
 
-    pub fn write_to_buffer(&self, buffer_ptr: *mut [u8], size: size_t, offset: off_t) -> size_t {
+    fn write_to_buffer(&self, buffer_ptr: *mut [u8], size: size_t, offset: off_t) -> size_t {
         let mut file = std::fs::File::open(&self.filepath).unwrap();
         let mut buffer: &mut [u8] = unsafe { &mut *buffer_ptr };
         file.seek(std::io::SeekFrom::Start(offset as u64)).unwrap();
         file.read(&mut buffer).unwrap()
-    }
-
-    fn path(&self) -> &std::path::Path {
-        std::path::Path::new(&self.filepath)
     }
 }
 
