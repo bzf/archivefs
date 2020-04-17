@@ -14,12 +14,45 @@ impl File {
 
     pub fn filename(&self) -> &str {
         self.path().file_name().unwrap().to_str().unwrap()
-        // "my-temporary-note.txt"
+    }
+
+    pub fn size(&self) -> u64 {
+        let metadata = std::fs::metadata(&self.filepath).unwrap();
+        metadata.len()
     }
 
     fn path(&self) -> &std::path::Path {
         std::path::Path::new(&self.filepath)
     }
+}
+
+#[test]
+fn test_file_size() {
+    let tmp_dir = TempDir::new("example").unwrap();
+
+    let file_path = tmp_dir.path().join("my-temporary-note.txt");
+    let mut tmp_file = std::fs::File::create(&file_path).unwrap();
+
+    let content = "Brian was here. Briefly.";
+    writeln!(tmp_file, "{}", content).unwrap();
+
+    println!("{:?}", file_path);
+    let file = File::new(file_path.as_path().to_str().unwrap());
+    assert_eq!((content.len() + 1) as u64, file.size());
+}
+
+#[test]
+fn test_file_name() {
+    let tmp_dir = TempDir::new("example").unwrap();
+
+    let file_path = tmp_dir.path().join("my-temporary-note.txt");
+    let mut tmp_file = std::fs::File::create(&file_path).unwrap();
+
+    writeln!(tmp_file, "Hello").unwrap();
+
+    println!("{:?}", file_path);
+    let file = File::new(file_path.as_path().to_str().unwrap());
+    assert_eq!(file.filename(), "my-temporary-note.txt");
 }
 
 #[derive(Debug)]
@@ -40,6 +73,10 @@ impl Directory {
 
     pub fn name(&self) -> &str {
         self.path().file_stem().unwrap().to_str().unwrap()
+    }
+
+    pub fn size(&self) -> u64 {
+        4096
     }
 
     pub fn list_files(&self) -> Vec<File> {
@@ -74,6 +111,10 @@ impl Directory {
         std::path::Path::new(&self.dirpath)
     }
 }
+
+// #[test]
+// fn test_directory_size_works() {
+// }
 
 #[derive(Debug)]
 struct Filesystem {
@@ -140,7 +181,6 @@ fn test_lists_files_in_relative_path() {
     let tmp_dir = TempDir::new("example").unwrap();
     let sub_dir_path = tmp_dir.path().join("subdir");
     std::fs::create_dir(&sub_dir_path).unwrap();
-    // std::fs::read_dir(&sub_dir_path).unwrap();
 
     let file_path = sub_dir_path.join("foo.txt");
     let mut tmp_file = std::fs::File::create(file_path).unwrap();
