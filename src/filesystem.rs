@@ -12,6 +12,10 @@ impl File {
         }
     }
 
+    pub fn clone(&self) -> File {
+        File::new(&self.filepath)
+    }
+
     pub fn filename(&self) -> &str {
         self.path().file_name().unwrap().to_str().unwrap()
     }
@@ -79,6 +83,15 @@ impl Directory {
         4096
     }
 
+    pub fn get_file(&self, filename: &str) -> Option<File> {
+        let files = self.list_files();
+
+        match files.iter().find(|file| file.filename() == filename) {
+            None => None,
+            Some(file) => Some(file.clone()),
+        }
+    }
+
     pub fn list_files(&self) -> Vec<File> {
         let entries = std::fs::read_dir(&self.dirpath).unwrap();
 
@@ -112,10 +125,6 @@ impl Directory {
     }
 }
 
-// #[test]
-// fn test_directory_size_works() {
-// }
-
 #[derive(Debug)]
 struct Filesystem {
     path: String,
@@ -139,6 +148,19 @@ impl Filesystem {
         }
     }
 
+    fn get_file(&self, path: &str) -> Option<File> {
+        let fragments: Vec<&str> = path.split('/').collect();
+
+        match fragments.as_slice() {
+            [directories, filename] => {
+                let directory = self.get_directory(directories);
+                directory.map(|dir| dir.get_file(filename)).unwrap_or(None)
+            }
+            [filename] => self.root_directory().get_file(&filename),
+            _ => None,
+        }
+    }
+
     fn get_directory(&self, path: &str) -> Option<Directory> {
         let fragments = path.split('/');
         let vec: Vec<&str> = fragments.collect();
@@ -157,6 +179,46 @@ impl Filesystem {
 
     fn root_directory(&self) -> Directory {
         Directory::new(&self.path)
+    }
+}
+
+#[test]
+fn test_getting_file_in_root() {
+    let tmp_dir = TempDir::new("example").unwrap();
+
+    let file_path = tmp_dir.path().join("my-temporary-note.txt");
+    let mut tmp_file = std::fs::File::create(file_path).unwrap();
+    writeln!(tmp_file, "Brian was here. Briefly.").unwrap();
+
+    let filesystem = Filesystem::new(tmp_dir.path().to_str().unwrap());
+
+    match filesystem.get_file("my-temporary-note.txt") {
+        Some(file) => {
+            assert_eq!(file.filename(), "my-temporary-note.txt");
+            assert_eq!(file.size(), 25);
+        }
+        _ => assert!(false, "Expected a file"),
+    }
+}
+
+#[test]
+fn test_getting_file_in_subdirectory() {
+    let tmp_dir = TempDir::new("example").unwrap();
+    let sub_dir_path = tmp_dir.path().join("subdir");
+    std::fs::create_dir(&sub_dir_path).unwrap();
+
+    let file_path = sub_dir_path.join("foo.txt");
+    let mut tmp_file = std::fs::File::create(file_path).unwrap();
+    writeln!(tmp_file, "foo").unwrap();
+
+    let filesystem = Filesystem::new(tmp_dir.path().to_str().unwrap());
+
+    match filesystem.get_file("subdir/foo.txt") {
+        Some(file) => {
+            assert_eq!(file.filename(), "foo.txt");
+            assert_eq!(file.size(), 4);
+        }
+        _ => assert!(false, "Expected a file"),
     }
 }
 
