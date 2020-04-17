@@ -106,7 +106,7 @@ pub extern "C" fn archivefs_handle_readdir_callback(
 
 #[no_mangle]
 pub extern "C" fn archivefs_handle_read_callback(
-    directory_archive: *mut DirectoryArchive,
+    filesystem_ptr: *mut Filesystem,
     path: *const c_char,
     buffer: *mut c_char,
     size: libc::size_t,
@@ -116,20 +116,15 @@ pub extern "C" fn archivefs_handle_read_callback(
     let path = unsafe { CStr::from_ptr(path) };
     let path: String = String::from(path.to_str().unwrap());
 
-    let node = unsafe { (*directory_archive).get_node_for_path(&path) };
+    let filesystem: &Filesystem = unsafe { &*filesystem_ptr };
 
-    match node {
-        Some(node) => {
-            let mut lock = node.try_lock();
-            if let Ok(ref mut mutex) = lock {
-                let node = &mut **mutex;
-                let result = node.write_to_buffer(buffer, size, offset) as i32;
-                return result;
-            } else {
-                return -libc::ENOENT;
-            }
+    match filesystem.get_node(&path) {
+        Some(FilesystemNode::File(file)) => {
+            let buf_slice: *mut [u8] =
+                unsafe { std::slice::from_raw_parts_mut(buffer as *mut u8, size) };
+            file.write_to_buffer(buf_slice, size, offset) as i32
         }
-        None => {
+        _ => {
             return -libc::ENOENT;
         }
     }

@@ -22,7 +22,7 @@ int readdir_callback(const char *directory_prefix, void *buf,
 
 int read_callback(const char *path, char *buf, size_t size, off_t offset,
                   struct fuse_file_info *file_info) {
-    return archivefs_handle_read_callback(g_directory_archive, path, buf, size,
+    return archivefs_handle_read_callback(g_filesystem, path, buf, size,
                                           offset, file_info);
 }
 
