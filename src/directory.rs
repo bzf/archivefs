@@ -1,6 +1,7 @@
 use std::io::Write;
 use tempdir::TempDir;
 
+use browseable::Browseable;
 use file::File;
 use filesystem_node::FilesystemNode;
 use readable::Readable;
@@ -9,7 +10,6 @@ use readable::Readable;
 pub struct Directory {
     dirpath: String,
 }
-
 impl Directory {
     pub fn new(dirpath: &str) -> Directory {
         Directory {
@@ -19,14 +19,6 @@ impl Directory {
 
     pub fn clone(&self) -> Directory {
         Directory::new(&self.dirpath)
-    }
-
-    pub fn name(&self) -> &str {
-        self.path().file_stem().unwrap().to_str().unwrap()
-    }
-
-    pub fn size(&self) -> u64 {
-        4096
     }
 
     pub fn get_file(&self, filename: &str) -> Option<Box<dyn Readable>> {
@@ -134,6 +126,12 @@ impl Directory {
 
     fn path(&self) -> &std::path::Path {
         std::path::Path::new(&self.dirpath)
+    }
+}
+
+impl Browseable for Directory {
+    fn name(&self) -> &str {
+        self.path().file_stem().unwrap().to_str().unwrap()
     }
 }
 

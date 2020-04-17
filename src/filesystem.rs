@@ -1,6 +1,7 @@
 use std::io::Write;
 use tempdir::TempDir;
 
+use browseable::Browseable;
 use directory::Directory;
 use directory_archive::DirectoryArchive;
 use file::File;

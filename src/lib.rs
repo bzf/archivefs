@@ -14,6 +14,7 @@ mod node;
 mod readable;
 mod utils;
 
+use browseable::Browseable;
 use directory_archive::DirectoryArchive;
 use ffi::FuseFileInfo;
 use filesystem::Filesystem;
