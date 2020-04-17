@@ -3,7 +3,7 @@ extern crate libc;
 use libc::size_t;
 use std::ffi::CString;
 use std::os::raw::c_char;
-use std::{ptr, mem};
+use std::{mem, ptr};
 
 use utils;
 
@@ -16,7 +16,7 @@ extern "C" {
 
     pub fn archive_seek_data(_: *mut Archive, _: i64, _: i64) -> i64;
 
-    pub fn archive_read_next_header(_: *mut Archive, _: *mut (*mut ArchiveEntry)) -> i64;
+    pub fn archive_read_next_header(_: *mut Archive, _: *mut *mut ArchiveEntry) -> i64;
 
     pub fn archive_entry_pathname(_: *mut ArchiveEntry) -> *const c_char;
     pub fn archive_entry_filetype(_: *mut ArchiveEntry) -> libc::mode_t;
@@ -35,7 +35,7 @@ extern "C" {
 
     pub fn archive_read_open_filenames(
         archive: *mut Archive,
-        filenames: *mut (*mut c_char),
+        filenames: *mut *mut c_char,
         block_size: libc::size_t,
     ) -> i64;
 
@@ -77,12 +77,12 @@ pub fn archive_open_and_read_from_path(
         parts.push(ptr::null_mut());
 
         parts.shrink_to_fit();
-        let vec: *mut (*mut c_char) = parts.as_mut_ptr();
+        let vec: *mut *mut c_char = parts.as_mut_ptr();
 
         mem::forget(vec); // prevent deallocation in Rust
-        // The array is still there but no Rust object
-        // feels responsible. We only have ptr/len now
-        // to reach it.
+                          // The array is still there but no Rust object
+                          // feels responsible. We only have ptr/len now
+                          // to reach it.
 
         unsafe {
             return archive_read_open_filenames(archive, vec, buffer_size);
