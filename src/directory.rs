@@ -82,28 +82,6 @@ impl Browseable for Directory {
         files
     }
 
-    fn get_file(&self, filename: &str) -> Option<Box<dyn Readable>> {
-        for file in self.list_files() {
-            if file.filename() == filename {
-                return Some(file.clone());
-            }
-        }
-
-        None
-    }
-
-    fn get_subdirectory(&self, name: &str) -> Option<Box<dyn Browseable>> {
-        let subdirectories = self.list_subdirectories();
-
-        for subdirectory in subdirectories {
-            if subdirectory.name() == name {
-                return Some(subdirectory.clone());
-            }
-        }
-
-        None
-    }
-
     fn get_node(&self, path: &str) -> Option<FilesystemNode> {
         if path == "/" {
             return Some(FilesystemNode::Browseable(self.clone()));
@@ -130,20 +108,6 @@ impl Browseable for Directory {
                 }
             }
         }
-    }
-
-    fn list_nodes(&self) -> Vec<FilesystemNode> {
-        let mut nodes: Vec<FilesystemNode> = vec![];
-
-        for file in self.list_files() {
-            nodes.push(FilesystemNode::Readable(file));
-        }
-
-        for directory in self.list_subdirectories() {
-            nodes.push(FilesystemNode::Browseable(directory));
-        }
-
-        nodes
     }
 }
 
