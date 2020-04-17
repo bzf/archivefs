@@ -69,12 +69,21 @@ impl Directory {
         let fragments: Vec<&str> = path.split('/').filter(|x| x != &"").collect();
 
         match fragments.as_slice() {
+            [] => None,
             [filename] => {
                 let mut foo = self.node_map();
                 let f = String::from(*filename);
                 foo.remove(&f)
             }
-            _ => None,
+            rest => {
+                let first = rest.first().unwrap();
+                let rest_path = &rest[1..].join("/");
+
+                match self.get_subdirectory(first) {
+                    Some(dir) => dir.get_node(rest_path),
+                    None => None,
+                }
+            }
         }
     }
 
@@ -134,8 +143,37 @@ fn test_getting_subdirectory_node() {
     }
 }
 
-// TODO: Fetch file is subdirectory
-// TODO: Fetch directory is subdirectory
+#[test]
+fn test_getting_node_directory_in_subdirectory() {
+    let tmp_dir = TempDir::new("test_getting_node_directory_in_subdirectory").unwrap();
+    std::fs::create_dir(tmp_dir.path().join("hello")).unwrap();
+    std::fs::create_dir(tmp_dir.path().join("hello").join("world")).unwrap();
+
+    let directory = Directory::new(tmp_dir.path().to_str().unwrap());
+
+    match directory.get_node("/hello/world") {
+        Some(FilesystemNode::Directory(dir)) => assert_eq!(dir.name(), "world"),
+        _ => unreachable!(),
+    }
+}
+
+#[test]
+fn test_getting_node_file_in_subdirectory() {
+    let tmp_dir = TempDir::new("test_getting_node_directory_in_subdirectory").unwrap();
+    std::fs::create_dir(tmp_dir.path().join("hello")).unwrap();
+    std::fs::create_dir(tmp_dir.path().join("hello").join("world")).unwrap();
+
+    let file_path = tmp_dir.path().join("hello/world/foo.txt");
+    let mut tmp_file = std::fs::File::create(file_path).unwrap();
+    writeln!(tmp_file, "foo").unwrap();
+
+    let directory = Directory::new(tmp_dir.path().to_str().unwrap());
+
+    match directory.get_node("/hello/world/foo.txt") {
+        Some(FilesystemNode::File(file)) => assert_eq!(file.filename(), "foo.txt"),
+        _ => unreachable!(),
+    }
+}
 
 #[test]
 fn test_getting_root_file_node() {
