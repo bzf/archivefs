@@ -3,6 +3,7 @@ extern crate tempdir;
 extern crate walkdir;
 
 mod archive;
+mod browseable;
 mod directory;
 mod directory_archive;
 mod ffi;
