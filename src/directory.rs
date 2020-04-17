@@ -21,15 +21,6 @@ impl Directory {
         Directory::new(&self.dirpath)
     }
 
-    pub fn get_file(&self, filename: &str) -> Option<Box<dyn Readable>> {
-        let files = self.list_files();
-
-        match files.iter().find(|file| file.filename() == filename) {
-            None => None,
-            Some(file) => Some(file.clone()),
-        }
-    }
-
     pub fn list_files(&self) -> Vec<File> {
         let entries = std::fs::read_dir(&self.dirpath).unwrap();
 
@@ -48,7 +39,47 @@ impl Directory {
             .collect()
     }
 
-    pub fn get_subdirectory(&self, name: &str) -> Option<Directory> {
+    fn node_map(&self) -> std::collections::HashMap<String, FilesystemNode> {
+        let mut nodes: std::collections::HashMap<String, FilesystemNode> =
+            std::collections::HashMap::new();
+
+        for file in self.list_files() {
+            nodes.insert(
+                String::from(file.filename()),
+                FilesystemNode::Readable(file.clone()),
+            );
+        }
+
+        for dir in self.list_subdirectories() {
+            nodes.insert(
+                String::from(dir.name()),
+                FilesystemNode::Directory(dir.clone()),
+            );
+        }
+
+        nodes
+    }
+
+    fn path(&self) -> &std::path::Path {
+        std::path::Path::new(&self.dirpath)
+    }
+}
+
+impl Browseable for Directory {
+    fn name(&self) -> &str {
+        self.path().file_stem().unwrap().to_str().unwrap()
+    }
+
+    fn get_file(&self, filename: &str) -> Option<Box<dyn Readable>> {
+        let files = self.list_files();
+
+        match files.iter().find(|file| file.filename() == filename) {
+            None => None,
+            Some(file) => Some(file.clone()),
+        }
+    }
+
+    fn get_subdirectory(&self, name: &str) -> Option<Directory> {
         let subdirectories = self.list_subdirectories();
         let subdirectory: Option<&Directory> = subdirectories.iter().find(|dir| dir.name() == name);
 
@@ -58,7 +89,7 @@ impl Directory {
         }
     }
 
-    pub fn get_node(&self, path: &str) -> Option<FilesystemNode> {
+    fn get_node(&self, path: &str) -> Option<FilesystemNode> {
         if path == "/" {
             return Some(FilesystemNode::Directory(self.clone()));
         }
@@ -86,28 +117,7 @@ impl Directory {
         }
     }
 
-    fn node_map(&self) -> std::collections::HashMap<String, FilesystemNode> {
-        let mut nodes: std::collections::HashMap<String, FilesystemNode> =
-            std::collections::HashMap::new();
-
-        for file in self.list_files() {
-            nodes.insert(
-                String::from(file.filename()),
-                FilesystemNode::Readable(file.clone()),
-            );
-        }
-
-        for dir in self.list_subdirectories() {
-            nodes.insert(
-                String::from(dir.name()),
-                FilesystemNode::Directory(dir.clone()),
-            );
-        }
-
-        nodes
-    }
-
-    pub fn list_nodes(&self) -> Vec<FilesystemNode> {
+    fn list_nodes(&self) -> Vec<FilesystemNode> {
         let mut files: Vec<FilesystemNode> = self
             .list_files()
             .iter()
@@ -122,16 +132,6 @@ impl Directory {
 
         files.extend(subdirectories);
         files
-    }
-
-    fn path(&self) -> &std::path::Path {
-        std::path::Path::new(&self.dirpath)
-    }
-}
-
-impl Browseable for Directory {
-    fn name(&self) -> &str {
-        self.path().file_stem().unwrap().to_str().unwrap()
     }
 }
 
