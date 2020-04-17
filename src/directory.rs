@@ -29,7 +29,7 @@ impl Directory {
         4096
     }
 
-    pub fn get_file(&self, filename: &str) -> Option<File> {
+    pub fn get_file(&self, filename: &str) -> Option<Box<dyn Readable>> {
         let files = self.list_files();
 
         match files.iter().find(|file| file.filename() == filename) {
@@ -101,7 +101,7 @@ impl Directory {
         for file in self.list_files() {
             nodes.insert(
                 String::from(file.filename()),
-                FilesystemNode::Readable(Box::new(file.clone())),
+                FilesystemNode::Readable(file.clone()),
             );
         }
 
@@ -119,7 +119,7 @@ impl Directory {
         let mut files: Vec<FilesystemNode> = self
             .list_files()
             .iter()
-            .map(|file| FilesystemNode::Readable(Box::new(file.clone())))
+            .map(|file| FilesystemNode::Readable(file.clone()))
             .collect();
 
         let subdirectories: Vec<FilesystemNode> = self

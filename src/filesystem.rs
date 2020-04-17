@@ -30,7 +30,7 @@ impl Filesystem {
         }
     }
 
-    fn get_file(&self, path: &str) -> Option<File> {
+    fn get_file(&self, path: &str) -> Option<Box<dyn Readable>> {
         let fragments: Vec<&str> = path.split('/').filter(|x| x != &"").collect();
 
         match fragments.as_slice() {

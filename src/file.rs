@@ -18,16 +18,16 @@ impl File {
         }
     }
 
-    pub fn clone(&self) -> File {
-        File::new(&self.filepath)
-    }
-
     fn path(&self) -> &std::path::Path {
         std::path::Path::new(&self.filepath)
     }
 }
 
 impl Readable for File {
+    fn clone(&self) -> Box<dyn Readable> {
+        Box::new(File::new(&self.filepath))
+    }
+
     fn filename(&self) -> &str {
         self.path().file_name().unwrap().to_str().unwrap()
     }

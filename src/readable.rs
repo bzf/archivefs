@@ -1,6 +1,8 @@
 use libc::{off_t, size_t};
 
 pub trait Readable {
+    fn clone(&self) -> Box<dyn Readable>;
+
     fn filename(&self) -> &str;
 
     fn size(&self) -> u64;
