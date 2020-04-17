@@ -37,7 +37,7 @@ pub fn archivefs_handle_getattr_callback(
 
     if let Some(fs_node) = filesystem.get_node(path) {
         match fs_node {
-            FilesystemNode::File(file) => unsafe {
+            FilesystemNode::Readable(file) => unsafe {
                 (*stbuf).st_mode = libc::S_IFREG | 0o0777;
                 (*stbuf).st_nlink = 2;
                 (*stbuf).st_size = file.size() as i64;
@@ -84,7 +84,7 @@ pub extern "C" fn archivefs_handle_readdir_callback(
     if let Some(directory) = filesystem.get_directory(&directory_prefix) {
         for node in directory.list_nodes() {
             match node {
-                FilesystemNode::File(file) => {
+                FilesystemNode::Readable(file) => {
                     let node_name: &str = &file.filename();
                     let node_name = CString::new(node_name).unwrap();
 
@@ -122,7 +122,7 @@ pub extern "C" fn archivefs_handle_read_callback(
     let filesystem: &Filesystem = unsafe { &*filesystem_ptr };
 
     match filesystem.get_node(&path) {
-        Some(FilesystemNode::File(file)) => {
+        Some(FilesystemNode::Readable(file)) => {
             let buf_slice: *mut [u8] =
                 unsafe { std::slice::from_raw_parts_mut(buffer as *mut u8, size) };
             file.write_to_buffer(buf_slice, size, offset) as i32

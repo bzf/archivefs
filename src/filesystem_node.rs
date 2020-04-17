@@ -1,8 +1,7 @@
 use directory::Directory;
-use file::File;
+use readable::Readable;
 
-#[derive(Debug)]
 pub enum FilesystemNode {
-    File(File),
+    Readable(Box<dyn Readable>),
     Directory(Directory),
 }

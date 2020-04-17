@@ -101,7 +101,7 @@ impl Directory {
         for file in self.list_files() {
             nodes.insert(
                 String::from(file.filename()),
-                FilesystemNode::File(file.clone()),
+                FilesystemNode::Readable(Box::new(file.clone())),
             );
         }
 
@@ -119,7 +119,7 @@ impl Directory {
         let mut files: Vec<FilesystemNode> = self
             .list_files()
             .iter()
-            .map(|file| FilesystemNode::File(file.clone()))
+            .map(|file| FilesystemNode::Readable(Box::new(file.clone())))
             .collect();
 
         let subdirectories: Vec<FilesystemNode> = self
@@ -177,7 +177,7 @@ fn test_getting_node_file_in_subdirectory() {
     let directory = Directory::new(tmp_dir.path().to_str().unwrap());
 
     match directory.get_node("/hello/world/foo.txt") {
-        Some(FilesystemNode::File(file)) => assert_eq!(file.filename(), "foo.txt"),
+        Some(FilesystemNode::Readable(file)) => assert_eq!(file.filename(), "foo.txt"),
         _ => unreachable!(),
     }
 }
@@ -193,7 +193,7 @@ fn test_getting_root_file_node() {
     let directory = Directory::new(tmp_dir.path().to_str().unwrap());
 
     match directory.get_node("/foo.txt") {
-        Some(FilesystemNode::File(file)) => assert_eq!(file.filename(), "foo.txt"),
+        Some(FilesystemNode::Readable(file)) => assert_eq!(file.filename(), "foo.txt"),
         _ => unreachable!(),
     }
 }
@@ -212,13 +212,13 @@ fn test_listing_all_nodes() {
 
     assert_eq!(directory.list_nodes().len(), 2);
     match directory.list_nodes().first() {
-        Some(FilesystemNode::File(file)) => assert_eq!(file.filename(), "foo.txt"),
+        Some(FilesystemNode::Readable(file)) => assert_eq!(file.filename(), "foo.txt"),
         Some(FilesystemNode::Directory(dir)) => assert_eq!(dir.name(), "hello"),
         _ => unreachable!(),
     }
 
     match directory.list_nodes().last() {
-        Some(FilesystemNode::File(file)) => assert_eq!(file.filename(), "foo.txt"),
+        Some(FilesystemNode::Readable(file)) => assert_eq!(file.filename(), "foo.txt"),
         Some(FilesystemNode::Directory(dir)) => assert_eq!(dir.name(), "hello"),
         _ => unreachable!(),
     }

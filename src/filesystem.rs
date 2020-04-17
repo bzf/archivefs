@@ -125,7 +125,7 @@ fn test_getting_root_file_node() {
     let filesystem = Filesystem::new(tmp_dir.path().to_str().unwrap());
 
     match filesystem.get_node("/foo.txt") {
-        Some(FilesystemNode::File(file)) => {
+        Some(FilesystemNode::Readable(file)) => {
             assert_eq!(file.filename(), "foo.txt");
             assert_eq!(file.size(), 4);
         }
