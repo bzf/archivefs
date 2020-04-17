@@ -7,7 +7,7 @@
 #include "libarchivefs.h"
 
 static void *g_directory_archive = NULL;
-// static void *g_filesystem = NULL;
+static void *g_filesystem = NULL;
 
 static int getattr_callback(const char *path, struct stat *stbuf) {
     return archivefs_handle_getattr_callback(g_directory_archive, path, stbuf);
@@ -59,6 +59,9 @@ int main(int argc, char **argv) {
 
     g_directory_archive =
         archivefs_directory_archive_new(configuration.directory_path);
+
+    g_filesystem =
+        archivefs_filesystem_new(configuration.directory_path);
 
     return fuse_main(args.argc, args.argv, &operations, NULL);
 }

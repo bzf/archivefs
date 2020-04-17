@@ -19,5 +19,6 @@ int archivefs_handle_release_callback(void *directory_archive, const char *path,
                                       struct fuse_file_info *);
 
 void *archivefs_directory_archive_new(const char *path);
+void *archivefs_filesystem_new(const char *path);
 
 #endif /* ifndef LIBARCHIVEFS_H_ */

@@ -11,6 +11,7 @@ mod utils;
 
 use directory_archive::DirectoryArchive;
 use ffi::FuseFileInfo;
+use filesystem::Filesystem;
 use libc::{off_t, stat};
 use std::boxed::Box;
 use std::ffi::{CStr, CString};
@@ -164,6 +165,18 @@ pub extern "C" fn archivefs_directory_archive_new(raw_path: *mut c_char) -> *mut
     let directory_archive: DirectoryArchive = DirectoryArchive::new(&path);
     let directory_archive_box = Box::new(directory_archive);
     let ptr: *mut DirectoryArchive = Box::into_raw(directory_archive_box);
+
+    return ptr;
+}
+
+#[no_mangle]
+pub extern "C" fn archivefs_filesystem_new(raw_path: *mut c_char) -> *mut Filesystem {
+    let path = unsafe { CStr::from_ptr(raw_path) };
+    let path: String = String::from(path.to_str().unwrap());
+
+    let filesystem: Filesystem = Filesystem::new(&path);
+    let filesystem_box = Box::new(filesystem);
+    let ptr: *mut Filesystem = Box::into_raw(filesystem_box);
 
     return ptr;
 }

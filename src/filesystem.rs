@@ -1,7 +1,7 @@
 use std::io::Write;
 use tempdir::TempDir;
 
-struct File {
+pub struct File {
     filepath: String,
 }
 
@@ -60,7 +60,7 @@ fn test_file_name() {
 }
 
 #[derive(Debug)]
-struct Directory {
+pub struct Directory {
     dirpath: String,
 }
 
@@ -126,7 +126,7 @@ impl Directory {
 }
 
 #[derive(Debug)]
-struct Filesystem {
+pub struct Filesystem {
     path: String,
 }
 
