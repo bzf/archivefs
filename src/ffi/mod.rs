@@ -19,7 +19,7 @@ extern "C" {
     pub fn archive_read_next_header(_: *mut Archive, _: *mut *mut ArchiveEntry) -> i64;
 
     pub fn archive_entry_pathname(_: *mut ArchiveEntry) -> *const c_char;
-    pub fn archive_entry_filetype(_: *mut ArchiveEntry) -> libc::mode_t;
+    pub fn _archive_entry_filetype(_: *mut ArchiveEntry) -> libc::mode_t;
     pub fn archive_entry_size(_: *mut ArchiveEntry) -> i64;
     pub fn archive_entry_clone(_: *mut ArchiveEntry) -> *mut ArchiveEntry;
 

@@ -147,7 +147,8 @@ mod tests {
                 .unwrap()
                 .join("tests/fixtures/single-level-single-file-archive.rar"),
             tmp_dir.path().join("single-level-single-file-archive.rar"),
-        );
+        )
+        .unwrap();
 
         let filesystem = Filesystem::new(tmp_dir.path().to_str().unwrap());
         let root_directory = filesystem.get_directory("/").unwrap();
