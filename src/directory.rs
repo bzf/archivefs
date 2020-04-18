@@ -1,3 +1,5 @@
+use regex::Regex;
+
 use browseable::Browseable;
 use file::File;
 use filesystem_node::FilesystemNode;
@@ -98,6 +100,9 @@ impl Browseable for Directory {
     fn list_files(&self) -> Vec<Box<dyn Readable>> {
         let entries = std::fs::read_dir(&self.dirpath).unwrap();
 
+        // Regex for matching against multi-part RAR-files
+        let re = Regex::new(r"^r\d{2}$").unwrap();
+
         let mut files: Vec<Box<dyn Readable>> = vec![];
 
         for node in entries {
@@ -105,7 +110,11 @@ impl Browseable for Directory {
 
             if !n.path().is_dir() {
                 if let Some(extension) = n.path().extension() {
-                    if extension != "rar" {
+                    let ex = extension.to_str().unwrap();
+
+                    if re.is_match(ex) {
+                        // No-op
+                    } else if extension != "rar" {
                         files.push(Box::new(File::new(n.path().to_str().unwrap())));
                     }
                 } else {
@@ -251,6 +260,10 @@ mod tests {
             &archive_path,
         )
         .unwrap();
+        std::fs::File::create(tmp_dir.path().join("single-level-single-file-archive.r00")).unwrap();
+        std::fs::File::create(tmp_dir.path().join("single-level-single-file-archive.r01")).unwrap();
+        std::fs::File::create(tmp_dir.path().join("single-level-single-file-archive.r02")).unwrap();
+        std::fs::File::create(tmp_dir.path().join("single-level-single-file-archive.r03")).unwrap();
 
         let directory = Directory::new(tmp_dir.path().to_str().unwrap());
 

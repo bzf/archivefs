@@ -1,4 +1,5 @@
 extern crate libc;
+extern crate regex;
 extern crate tempdir;
 extern crate walkdir;
 
