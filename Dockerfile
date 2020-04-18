@@ -25,13 +25,17 @@ ADD build.rs ./
 ADD Makefile ./
 RUN make
 
+ADD man man/
+
 RUN mkdir -p "dist/usr/local/bin"
 RUN mkdir -p "dist/usr/local/opt/archivefs/lib"
+RUN mkdir -p "dist/usr/local/man/man1"
 RUN mkdir -p "dist/DEBIAN"
 
 ADD debian/control dist/DEBIAN
 RUN cp archivefs dist/usr/local/bin
 RUN cp target/release/libarchivefs.so dist/usr/local/opt/archivefs/lib
+RUN cp man/archivefs.1 dist/usr/local/man/man1
 
 WORKDIR /output
 ENTRYPOINT ["dpkg-deb", "--build", "/home/builder/archivefs/dist", "/output"]
