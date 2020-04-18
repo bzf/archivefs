@@ -6,7 +6,6 @@
 
 #include "libarchivefs.h"
 
-static void *g_directory_archive = NULL;
 static void *g_filesystem = NULL;
 
 static int getattr_callback(const char *path, struct stat *stbuf) {
@@ -27,7 +26,7 @@ int read_callback(const char *path, char *buf, size_t size, off_t offset,
 }
 
 int release_callback(const char *path, struct fuse_file_info *file_info) {
-    return archivefs_handle_release_callback(g_directory_archive, path,
+    return archivefs_handle_release_callback(g_filesystem, path,
                                              file_info);
 }
 
@@ -56,9 +55,6 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Need to set which archive you want to mount\n");
         return 1;
     }
-
-    g_directory_archive =
-        archivefs_directory_archive_new(configuration.directory_path);
 
     g_filesystem =
         archivefs_filesystem_new(configuration.directory_path);

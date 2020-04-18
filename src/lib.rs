@@ -136,41 +136,13 @@ pub extern "C" fn archivefs_handle_read_callback(
 
 #[no_mangle]
 pub extern "C" fn archivefs_handle_release_callback(
-    directory_archive: *mut DirectoryArchive,
-    path: *const c_char,
+    filesystem_ptr: *mut Filesystem,
+    _path: *const c_char,
     _file_info: *mut FuseFileInfo,
 ) -> i32 {
-    let path = unsafe { CStr::from_ptr(path) };
-    let path: String = String::from(path.to_str().unwrap());
+    let _filesystem: &Filesystem = unsafe { &*filesystem_ptr };
 
-    let node = unsafe { (*directory_archive).get_node_for_path(&path) };
-
-    match node {
-        Some(node) => {
-            let mut lock = node.try_lock();
-            if let Ok(ref mut mutex) = lock {
-                let node = &mut **mutex;
-                return node.close() as i32;
-            } else {
-                return -libc::ENOENT;
-            }
-        }
-        None => {
-            return -libc::ENOENT;
-        }
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn archivefs_directory_archive_new(raw_path: *mut c_char) -> *mut DirectoryArchive {
-    let path = unsafe { CStr::from_ptr(raw_path) };
-    let path: String = String::from(path.to_str().unwrap());
-
-    let directory_archive: DirectoryArchive = DirectoryArchive::new(&path);
-    let directory_archive_box = Box::new(directory_archive);
-    let ptr: *mut DirectoryArchive = Box::into_raw(directory_archive_box);
-
-    return ptr;
+    return 0;
 }
 
 #[no_mangle]
