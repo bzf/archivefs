@@ -3,20 +3,16 @@ extern crate regex;
 extern crate tempdir;
 extern crate walkdir;
 
-mod archive;
 mod browseable;
 mod directory;
-mod directory_archive;
 mod ffi;
 mod file;
 mod filesystem;
 mod filesystem_node;
 mod fs_archive;
-mod node;
 mod readable;
 mod utils;
 
-use directory_archive::DirectoryArchive;
 use ffi::FuseFileInfo;
 use filesystem::Filesystem;
 use filesystem_node::FilesystemNode;
