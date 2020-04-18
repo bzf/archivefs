@@ -1,6 +1,7 @@
 use browseable::Browseable;
 use file::File;
 use filesystem_node::FilesystemNode;
+use fs_archive::FSArchive;
 use readable::Readable;
 
 #[derive(Debug)]
@@ -36,6 +37,30 @@ impl Directory {
         nodes
     }
 
+    fn list_archives(&self) -> Vec<Box<dyn Browseable>> {
+        let entries = std::fs::read_dir(&self.dirpath).unwrap();
+
+        let mut archives: Vec<Box<dyn Browseable>> = vec![];
+
+        for node in entries {
+            let n = node.unwrap();
+
+            if !n.path().is_dir() {
+                if let Some(extension) = n.path().extension() {
+                    if extension == "rar" {
+                        let archive = FSArchive::new(n.path().to_str().unwrap());
+                        archives.push(Box::new(archive));
+                    } else if extension == "gz" {
+                        let archive = FSArchive::new(n.path().to_str().unwrap());
+                        archives.push(Box::new(archive));
+                    }
+                }
+            }
+        }
+
+        archives
+    }
+
     fn path(&self) -> &std::path::Path {
         std::path::Path::new(&self.dirpath)
     }
@@ -63,6 +88,10 @@ impl Browseable for Directory {
             }
         }
 
+        for archive in self.list_archives() {
+            subdirectories.push(archive.clone())
+        }
+
         subdirectories
     }
 
@@ -75,7 +104,13 @@ impl Browseable for Directory {
             let n = node.unwrap();
 
             if !n.path().is_dir() {
-                files.push(Box::new(File::new(n.path().to_str().unwrap())));
+                if let Some(extension) = n.path().extension() {
+                    if extension != "rar" {
+                        files.push(Box::new(File::new(n.path().to_str().unwrap())));
+                    }
+                } else {
+                    files.push(Box::new(File::new(n.path().to_str().unwrap())));
+                }
             }
         }
 
@@ -200,6 +235,33 @@ mod tests {
         match directory.list_nodes().last() {
             Some(FilesystemNode::Readable(file)) => assert_eq!(file.filename(), "foo.txt"),
             Some(FilesystemNode::Browseable(dir)) => assert_eq!(dir.name(), "hello"),
+            _ => unreachable!(),
+        }
+    }
+
+    #[test]
+    fn test_listing_archives() {
+        let tmp_dir = TempDir::new("test_listing_archives").unwrap();
+
+        let archive_path = tmp_dir.path().join("single-level-single-file-archive.rar");
+        std::fs::copy(
+            std::env::current_dir()
+                .unwrap()
+                .join("tests/fixtures/single-level-single-file-archive.rar"),
+            &archive_path,
+        )
+        .unwrap();
+
+        let directory = Directory::new(tmp_dir.path().to_str().unwrap());
+
+        assert_eq!(directory.list_files().len(), 0);
+        assert_eq!(directory.list_subdirectories().len(), 1);
+        assert_eq!(directory.list_archives().len(), 1);
+
+        match directory.list_archives().first() {
+            Some(archive) => {
+                assert_eq!(archive.name(), "single-level-single-file-archive");
+            }
             _ => unreachable!(),
         }
     }

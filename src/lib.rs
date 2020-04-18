@@ -10,6 +10,7 @@ mod ffi;
 mod file;
 mod filesystem;
 mod filesystem_node;
+mod fs_archive;
 mod node;
 mod readable;
 mod utils;

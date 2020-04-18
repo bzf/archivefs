@@ -138,4 +138,29 @@ mod tests {
         let filenames_in_root: Vec<&str> = files_in_root.iter().map(|x| x.filename()).collect();
         assert_eq!(filenames_in_root, vec!["foo.txt"]);
     }
+
+    #[test]
+    fn test_archive_in_root_as_directory() {
+        let tmp_dir = TempDir::new("test_archive_in_root_as_directory").unwrap();
+        std::fs::copy(
+            std::env::current_dir()
+                .unwrap()
+                .join("tests/fixtures/single-level-single-file-archive.rar"),
+            tmp_dir.path().join("single-level-single-file-archive.rar"),
+        );
+
+        let filesystem = Filesystem::new(tmp_dir.path().to_str().unwrap());
+        let root_directory = filesystem.get_directory("/").unwrap();
+
+        assert_eq!(
+            root_directory.list_files().len(),
+            0,
+            "should not have any files"
+        );
+
+        let subdirectories = root_directory.list_subdirectories();
+        assert_eq!(subdirectories.len(), 1, "should have a directory");
+        let subdirectory_names: Vec<&str> = subdirectories.iter().map(|x| x.name()).collect();
+        assert_eq!(subdirectory_names, vec!["single-level-single-file-archive"]);
+    }
 }
