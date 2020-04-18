@@ -1,0 +1,41 @@
+.\" Manpage for archivefs.
+.\" Open an issue on the repository to correct errors or types.
+.TH archivefs 1 "18 April 2020" "0.1.0" "archivefs man page"
+
+.SH NAME
+.B archivefs
+\- mount a directory with archivefs
+
+.SH SYNOPSIS
+.B archivefs
+.B --directory\fR=\fIsource mountpoint
+
+.SH DESCRIPTION
+archivefs is a program that allows you to mount a directory with archive files
+(e.g. *.rar, *.tar) and allows you to treat them as regular directories with
+files in them.
+
+.PP
+This allows you to use your regular tools and applications when browsing them,
+without having that support in the tools themselves.
+
+.PP
+Any files that are not archives will be treated the same, allowing you to mix
+regular files and directories with archives in the same mountpoint.
+
+.SH OPTIONS
+archivefs requires a directory to use as the starting point for the virtual
+filesystem, as well as a path for which to mount to.
+
+Since archivefs uses FUSE for it's implementation, you can pass all of those
+options as well.
+
+.SH SEE ALSO
+fuse(8), libarchive(3), mount(8)
+
+.SH BUGS
+It does not support archives with directories in them, and will only list files
+that are available in the root of the archive.
+
+.SH AUTHOR
+The main author of archivefs is André Ligné <hi@andreligne.se>.
