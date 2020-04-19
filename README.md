@@ -11,8 +11,6 @@
   instead of unpacking them to read the content.
 
 ## Building
-  __NOTE: Right now it only works to compile for macOS.__
-  
   To build `archivefs` there are some packages that are required to be
   installed on the system:
 
