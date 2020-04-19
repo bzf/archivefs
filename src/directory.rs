@@ -114,7 +114,7 @@ impl Browseable for Directory {
 
                     if re.is_match(ex) {
                         // No-op
-                    } else if extension != "rar" {
+                    } else if extension != "rar" && extension != "gz" {
                         files.push(Box::new(File::new(n.path().to_str().unwrap())));
                     }
                 } else {
@@ -244,6 +244,32 @@ mod tests {
         match directory.list_nodes().last() {
             Some(FilesystemNode::Readable(file)) => assert_eq!(file.filename(), "foo.txt"),
             Some(FilesystemNode::Browseable(dir)) => assert_eq!(dir.name(), "hello"),
+            _ => unreachable!(),
+        }
+    }
+
+    #[test]
+    fn test_listing_tar_gz_archive() {
+        let tmp_dir = TempDir::new("test_listing_tar_gz_archive").unwrap();
+        let archive_path = tmp_dir.path().join("single-level-archive.tar.gz");
+        std::fs::copy(
+            std::env::current_dir()
+                .unwrap()
+                .join("tests/fixtures/single-level-archive.gz"),
+            &archive_path,
+        )
+        .unwrap();
+
+        let directory = Directory::new(tmp_dir.path().to_str().unwrap());
+
+        assert_eq!(directory.list_files().len(), 0,);
+        assert_eq!(directory.list_subdirectories().len(), 1);
+        assert_eq!(directory.list_archives().len(), 1);
+
+        match directory.get_node("/single-level-archive") {
+            Some(FilesystemNode::Browseable(archive)) => {
+                assert_eq!(archive.name(), "single-level-archive");
+            }
             _ => unreachable!(),
         }
     }

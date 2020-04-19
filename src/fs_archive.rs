@@ -4,6 +4,8 @@ use std::ffi::CStr;
 use std::os::raw::c_char;
 use std::ptr;
 
+use regex::Regex;
+
 use browseable::Browseable;
 use ffi;
 use filesystem_node::FilesystemNode;
@@ -12,17 +14,20 @@ use readable::Readable;
 
 pub struct FSArchive {
     archive_path: String,
+    name: String,
 }
 
 impl FSArchive {
-    pub fn new(path: &str) -> FSArchive {
-        FSArchive {
-            archive_path: String::from(path),
-        }
-    }
+    pub fn new(archive_path: &str) -> FSArchive {
+        let path = std::path::Path::new(archive_path);
 
-    fn path(&self) -> &std::path::Path {
-        std::path::Path::new(&self.archive_path)
+        let regex = Regex::new(r"(\.tar$)").unwrap();
+        let name = regex.replace_all(path.file_stem().unwrap().to_str().unwrap(), "");
+
+        FSArchive {
+            archive_path: String::from(archive_path),
+            name: String::from(name),
+        }
     }
 
     fn node_map(&self) -> std::collections::HashMap<String, FilesystemNode> {
@@ -49,7 +54,7 @@ impl FSArchive {
 
 impl Browseable for FSArchive {
     fn name(&self) -> &str {
-        self.path().file_stem().unwrap().to_str().unwrap()
+        &self.name
     }
 
     fn clone(&self) -> Box<dyn Browseable> {
@@ -182,5 +187,22 @@ mod tests {
             vec!["hello.txt"],
             "should have one file named 'hello.txt'"
         );
+    }
+
+    #[test]
+    fn test_name_with_tar_gz_file_extension() {
+        let tmp_dir = TempDir::new("test_name_with_tar_gz_file_extension").unwrap();
+        let archive_path = tmp_dir.path().join("single-level-archive.tar.gz");
+        std::fs::copy(
+            std::env::current_dir()
+                .unwrap()
+                .join("tests/fixtures/single-level-archive.gz"),
+            &archive_path,
+        )
+        .unwrap();
+
+        let fs_archive = FSArchive::new(&archive_path.to_str().unwrap());
+
+        assert_eq!(fs_archive.name(), "single-level-archive");
     }
 }
