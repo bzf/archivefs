@@ -6,6 +6,11 @@
   archivefs [-sdf] --directory=/some/absolute/path /mountpoint
   ```
 
+## Features
+  * Expand archives as directories
+  * Reads files from an archive as a regular file
+  * Shows non-archive files and directories as normal
+
 ## Quick example
   ```sh
   $ tree .
