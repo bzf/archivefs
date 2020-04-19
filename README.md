@@ -6,6 +6,34 @@
   archivefs [-sdf] --directory=/some/absolute/path /mountpoint
   ```
 
+## Quick example
+  ```sh
+  $ tree .
+  .
+  ├── archives
+  │   └── maskinen.tar.gz
+  └── mountpoint
+
+  2 directories, 1 file
+  $ archivefs --directory=$HOME/example/archives mountpoint/
+  $ tree .
+  .
+  ├── archives
+  │   └── maskinen.tar.gz
+  └── mountpoint
+      └── maskinen
+          ├── pengar.txt
+          └── segertaget.txt
+
+  3 directories, 3 files
+  $ cat mountpoint/maskinen/segertaget.txt | head -n5
+  [Vers 1]
+  He-he-hej, här kommer segertåget
+  Rullar in som teknodromen
+  Tryck på play, du sätter på den
+  Dansar som på, äh, vi kör igen
+  ```
+
 ## Description
   `archivefs` is a FUSE file system for mounting and reading from archive files
   instead of unpacking them to read the content.
