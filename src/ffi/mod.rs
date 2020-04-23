@@ -28,7 +28,7 @@ extern "C" {
 
     pub fn archive_read_open_filename(
         archive: *mut Archive,
-        filename: *mut c_char,
+        filename: *const c_char,
         block_size: libc::size_t,
     ) -> i64;
 
@@ -88,10 +88,10 @@ pub fn archive_open_and_read_from_path(
         }
     } else {
         let path_bytes = path.clone().into_bytes();
-        let path_ptr = CString::new(path_bytes).unwrap().into_raw(); // = CString
+        let path_ptr: CString = CString::new(path_bytes).unwrap();
 
         unsafe {
-            return archive_read_open_filename(archive, path_ptr, buffer_size);
+            return archive_read_open_filename(archive, path_ptr.as_ptr(), buffer_size);
         };
     }
 }
