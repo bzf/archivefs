@@ -26,12 +26,6 @@ extern "C" {
     pub fn archive_read_support_filter_all(_: *mut Archive) -> i64;
     pub fn archive_read_support_format_all(_: *mut Archive) -> i64;
 
-    pub fn archive_read_open_filename(
-        archive: *mut Archive,
-        filename: *const c_char,
-        block_size: libc::size_t,
-    ) -> i64;
-
     pub fn archive_read_open_filenames(
         archive: *mut Archive,
         filenames: *mut *mut c_char,
@@ -50,9 +44,10 @@ pub fn archive_open_and_read_from_path(
 ) -> i64 {
     let path: String = String::from(path);
 
+    let mut parts: Vec<String> = vec![path.clone()];
+
     if utils::is_multipart_rar_file(path.clone()) {
         let filename = utils::filename_without_extension(path.clone(), ".rar");
-        let mut parts: Vec<String> = vec![path]; // Vec::new();
 
         let mut rar_part_index: u32 = 0;
         loop {
@@ -67,31 +62,25 @@ pub fn archive_open_and_read_from_path(
 
             rar_part_index += 1;
         }
-
-        let parts: Vec<CString> = parts
-            .into_iter()
-            .map(|x| CString::new(x).unwrap())
-            .collect();
-        let mut parts: Vec<*mut c_char> = parts.into_iter().map(|x| x.into_raw()).collect();
-        parts.push(ptr::null_mut());
-
-        parts.shrink_to_fit();
-        let vec: *mut *mut c_char = parts.as_mut_ptr();
-
-        mem::forget(vec); // prevent deallocation in Rust
-                          // The array is still there but no Rust object
-                          // feels responsible. We only have ptr/len now
-                          // to reach it.
-
-        unsafe {
-            return archive_read_open_filenames(archive, vec, buffer_size);
-        }
-    } else {
-        let path_bytes = path.clone().into_bytes();
-        let path_ptr: CString = CString::new(path_bytes).unwrap();
-
-        unsafe {
-            return archive_read_open_filename(archive, path_ptr.as_ptr(), buffer_size);
-        };
     }
+
+    let cparts: Vec<CString> = parts
+        .into_iter()
+        .map(|x| CString::new(x).unwrap())
+        .collect();
+
+    let mut ptr_parts: Vec<*mut c_char> = cparts.into_iter().map(|x| x.into_raw()).collect();
+    ptr_parts.push(ptr::null_mut());
+
+    ptr_parts.shrink_to_fit();
+    let vec: *mut *mut c_char = ptr_parts.as_mut_ptr();
+
+    mem::forget(vec); // prevent deallocation in Rust
+                      // The array is still there but no Rust object
+                      // feels responsible. We only have ptr/len now
+                      // to reach it.
+
+    unsafe {
+        return archive_read_open_filenames(archive, vec, buffer_size);
+    };
 }
