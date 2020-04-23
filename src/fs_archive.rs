@@ -72,7 +72,7 @@ impl Browseable for FSArchive {
         unsafe {
             ffi::archive_read_support_filter_all(archive);
             ffi::archive_read_support_format_all(archive);
-            ffi::archive_open_and_read_from_path(&self.archive_path, archive, 10240);
+            ffi::archive_open_and_read_from_path(&self.archive_path, archive, 8192);
         };
 
         let mut archive_entry: *mut ffi::ArchiveEntry = ptr::null_mut();
