@@ -82,8 +82,6 @@ impl Browseable for FSArchive {
                 break;
             }
 
-            let cloned_entry: *mut ffi::ArchiveEntry =
-                unsafe { ffi::archive_entry_clone(archive_entry) };
             let archive_pathname: *const c_char =
                 unsafe { ffi::archive_entry_pathname(archive_entry) };
             let archive_path = unsafe { CStr::from_ptr(archive_pathname) };
@@ -91,12 +89,7 @@ impl Browseable for FSArchive {
 
             let filesize: u64 = unsafe { ffi::archive_entry_size(archive_entry) } as u64;
 
-            let archive_file: FSFile = FSFile::new(
-                &self.archive_path,
-                filesize,
-                &archive_pathname,
-                cloned_entry,
-            );
+            let archive_file: FSFile = FSFile::new(&self.archive_path, filesize, &archive_pathname);
             archive_files.push(Box::new(archive_file));
 
             unsafe { ffi::archive_read_data_skip(archive) };

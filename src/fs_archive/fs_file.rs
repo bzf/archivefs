@@ -11,21 +11,14 @@ pub struct FSFile {
     archive_path: String,
     path: String,
     filesize: u64,
-    archive_entry: *mut ffi::ArchiveEntry,
 }
 
 impl FSFile {
-    pub fn new(
-        path: &str,
-        filesize: u64,
-        archive_path: &str,
-        archive_entry: *mut ffi::ArchiveEntry,
-    ) -> FSFile {
+    pub fn new(path: &str, filesize: u64, archive_path: &str) -> FSFile {
         FSFile {
             path: String::from(path),
             filesize: filesize,
             archive_path: String::from(archive_path),
-            archive_entry: archive_entry,
         }
     }
 
@@ -59,14 +52,7 @@ impl FSFile {
 
 impl Readable for FSFile {
     fn clone(&self) -> Box<dyn Readable> {
-        let cloned_entry: *mut ffi::ArchiveEntry =
-            unsafe { ffi::archive_entry_clone(self.archive_entry) };
-        Box::new(FSFile::new(
-            &self.path,
-            self.filesize,
-            &self.archive_path,
-            cloned_entry,
-        ))
+        Box::new(FSFile::new(&self.path, self.filesize, &self.archive_path))
     }
 
     fn filename(&self) -> &str {

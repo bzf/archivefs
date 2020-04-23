@@ -21,7 +21,6 @@ extern "C" {
     pub fn archive_entry_pathname(_: *mut ArchiveEntry) -> *const c_char;
     pub fn _archive_entry_filetype(_: *mut ArchiveEntry) -> libc::mode_t;
     pub fn archive_entry_size(_: *mut ArchiveEntry) -> i64;
-    pub fn archive_entry_clone(_: *mut ArchiveEntry) -> *mut ArchiveEntry;
 
     pub fn archive_read_new() -> *mut Archive;
     pub fn archive_read_support_filter_all(_: *mut Archive) -> i64;
