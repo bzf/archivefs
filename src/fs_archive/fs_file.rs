@@ -5,14 +5,13 @@ use std::os::raw::c_char;
 use std::ptr;
 
 use ffi;
-use ffi::{Archive, ArchiveEntry};
 use readable::Readable;
 
 pub struct FSFile {
     archive_path: String,
     path: String,
     filesize: u64,
-    archive_entry: *mut ArchiveEntry,
+    archive_entry: *mut ffi::ArchiveEntry,
 }
 
 impl FSFile {
@@ -20,7 +19,7 @@ impl FSFile {
         path: &str,
         filesize: u64,
         archive_path: &str,
-        archive_entry: *mut ArchiveEntry,
+        archive_entry: *mut ffi::ArchiveEntry,
     ) -> FSFile {
         FSFile {
             path: String::from(path),
@@ -30,14 +29,14 @@ impl FSFile {
         }
     }
 
-    fn open(&self) -> *mut Archive {
-        let archive: *mut Archive = unsafe { ffi::archive_read_new() };
+    fn open(&self) -> *mut ffi::Archive {
+        let archive: *mut ffi::Archive = unsafe { ffi::archive_read_new() };
         unsafe { ffi::archive_read_support_filter_all(archive) };
         unsafe { ffi::archive_read_support_format_all(archive) };
 
         ffi::archive_open_and_read_from_path(&self.path, archive, 8192);
 
-        let mut entry: *mut ArchiveEntry = ptr::null_mut();
+        let mut entry: *mut ffi::ArchiveEntry = ptr::null_mut();
         let our_entry_path: &str = &self.archive_path;
 
         while unsafe { ffi::archive_read_next_header(archive, &mut entry) == 0x0 } {
@@ -60,7 +59,7 @@ impl FSFile {
 
 impl Readable for FSFile {
     fn clone(&self) -> Box<dyn Readable> {
-        let cloned_entry: *mut ArchiveEntry =
+        let cloned_entry: *mut ffi::ArchiveEntry =
             unsafe { ffi::archive_entry_clone(self.archive_entry) };
         Box::new(FSFile::new(
             &self.path,
