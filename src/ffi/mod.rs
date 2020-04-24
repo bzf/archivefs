@@ -42,27 +42,7 @@ pub fn archive_open_and_read_from_path(
     archive: *mut Archive,
     buffer_size: libc::size_t,
 ) -> i64 {
-    let path: String = String::from(path);
-
-    let mut parts: Vec<String> = vec![path.clone()];
-
-    if utils::is_multipart_rar_file(path.clone()) {
-        let filename = utils::filename_without_extension(path.clone(), ".rar");
-
-        let mut rar_part_index: u32 = 0;
-        loop {
-            let filename_index = format!("{:02}", rar_part_index);
-            let filename_part = format!("{}.r{}", filename, filename_index);
-
-            if utils::does_file_exist(&filename_part) {
-                parts.push(filename_part);
-            } else {
-                break;
-            }
-
-            rar_part_index += 1;
-        }
-    }
+    let parts: Vec<String> = utils::get_all_archive_filenames(&path);
 
     let cparts: Vec<CString> = parts
         .into_iter()
