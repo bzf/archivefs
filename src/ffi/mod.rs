@@ -3,7 +3,7 @@ extern crate libc;
 use libc::size_t;
 use std::ffi::CString;
 use std::os::raw::c_char;
-use std::{mem, ptr};
+use std::ptr;
 
 use utils;
 
@@ -45,20 +45,13 @@ pub fn archive_open_and_read_from_path(
     let parts: Vec<String> = utils::get_all_archive_filenames(&path);
 
     let cparts: Vec<CString> = parts
-        .into_iter()
-        .map(|x| CString::new(x).unwrap())
+        .iter()
+        .map(|x| CString::new(x.as_str()).unwrap())
         .collect();
 
-    let mut ptr_parts: Vec<*mut c_char> = cparts.into_iter().map(|x| x.into_raw()).collect();
+    let mut ptr_parts: Vec<*const c_char> = cparts.iter().map(|x| x.as_ptr()).collect();
     ptr_parts.push(ptr::null_mut());
-
-    ptr_parts.shrink_to_fit();
-    let vec: *const *const c_char = ptr_parts.as_ptr() as *const *const c_char;
-
-    mem::forget(vec); // prevent deallocation in Rust
-                      // The array is still there but no Rust object
-                      // feels responsible. We only have ptr/len now
-                      // to reach it.
+    let vec: *const *const c_char = ptr_parts.as_ptr();
 
     unsafe {
         return archive_read_open_filenames(archive, vec, buffer_size);
