@@ -28,7 +28,7 @@ extern "C" {
 
     pub fn archive_read_open_filenames(
         archive: *mut Archive,
-        filenames: *mut *mut c_char,
+        filenames: *const *const c_char,
         block_size: libc::size_t,
     ) -> i64;
 
@@ -53,7 +53,7 @@ pub fn archive_open_and_read_from_path(
     ptr_parts.push(ptr::null_mut());
 
     ptr_parts.shrink_to_fit();
-    let vec: *mut *mut c_char = ptr_parts.as_mut_ptr();
+    let vec: *const *const c_char = ptr_parts.as_ptr() as *const *const c_char;
 
     mem::forget(vec); // prevent deallocation in Rust
                       // The array is still there but no Rust object
