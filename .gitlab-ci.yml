@@ -1,0 +1,6 @@
+image: rust:1-buster
+job:
+  script:
+  - apt-get update && apt-get install -y libarchive-dev libfuse-dev
+  - cargo build --verbose
+  - cargo test --verbose
