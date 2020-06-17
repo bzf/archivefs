@@ -198,4 +198,30 @@ mod tests {
 
         assert_eq!(fs_archive.name(), "single-level-archive");
     }
+
+    #[test]
+    fn test_name_with_zip_file_extension() {
+        let tmp_dir = TempDir::new("test_name_with_zip_file_extension").unwrap();
+        let archive_path = tmp_dir.path().join("single-level-archive.zip");
+        std::fs::copy(
+            std::env::current_dir()
+                .unwrap()
+                .join("tests/fixtures/single-level-archive.zip"),
+            &archive_path,
+        )
+        .unwrap();
+
+        let fs_archive = FSArchive::new(&archive_path.to_str().unwrap());
+
+        assert_eq!(fs_archive.name(), "single-level-archive");
+        assert_eq!(fs_archive.list_files().len(), 1, "should have files");
+
+        let files = fs_archive.list_files();
+        let filenames: Vec<&str> = files.iter().map(|x| x.filename()).collect();
+        assert_eq!(
+            filenames,
+            vec!["hello.txt"],
+            "should have one file named 'hello.txt'"
+        );
+    }
 }

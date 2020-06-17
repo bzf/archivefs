@@ -52,6 +52,9 @@ impl Directory {
                     if extension == "rar" {
                         let archive = FSArchive::new(n.path().to_str().unwrap());
                         archives.push(Box::new(archive));
+                    } else if extension == "zip" {
+                        let archive = FSArchive::new(n.path().to_str().unwrap());
+                        archives.push(Box::new(archive));
                     } else if extension == "gz" {
                         let archive = FSArchive::new(n.path().to_str().unwrap());
                         archives.push(Box::new(archive));
@@ -300,6 +303,32 @@ mod tests {
         match directory.list_archives().first() {
             Some(archive) => {
                 assert_eq!(archive.name(), "single-level-single-file-archive");
+            }
+            _ => unreachable!(),
+        }
+    }
+
+    #[test]
+    fn test_listing_zip_archive() {
+        let tmp_dir = TempDir::new("test_listing_zip_archive").unwrap();
+
+        let archive_path = tmp_dir.path().join("single-level-archive.zip");
+        std::fs::copy(
+            std::env::current_dir()
+                .unwrap()
+                .join("tests/fixtures/single-level-archive.zip"),
+            &archive_path,
+        )
+        .unwrap();
+
+        let directory = Directory::new(tmp_dir.path().to_str().unwrap());
+
+        assert_eq!(directory.list_subdirectories().len(), 1);
+        assert_eq!(directory.list_archives().len(), 1);
+
+        match directory.list_archives().first() {
+            Some(archive) => {
+                assert_eq!(archive.name(), "single-level-archive");
             }
             _ => unreachable!(),
         }
