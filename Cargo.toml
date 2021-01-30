@@ -12,4 +12,4 @@ regex = "1"
 
 [lib]
 name = "archivefs"
-crate-type = ["dylib"]
+crate-type = ["dylib", "rlib"]

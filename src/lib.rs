@@ -11,16 +11,22 @@ mod filesystem;
 mod filesystem_node;
 mod fs_archive;
 mod readable;
-mod utils;
+pub mod utils;
 
 use ffi::FuseFileInfo;
-use filesystem::Filesystem;
-use filesystem_node::FilesystemNode;
 use libc::{off_t, stat};
 use std::boxed::Box;
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_void};
 use std::ptr;
+
+pub use browseable::Browseable;
+pub use directory::Directory;
+pub use file::File;
+pub use filesystem::Filesystem;
+pub use filesystem_node::FilesystemNode;
+pub use fs_archive::FSArchive;
+pub use readable::Readable;
 
 #[no_mangle]
 pub fn archivefs_handle_getattr_callback(
