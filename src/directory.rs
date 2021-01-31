@@ -9,12 +9,14 @@ use readable::Readable;
 #[derive(Debug)]
 pub struct Directory {
     dirpath: String,
+    ignored_file_path: String,
 }
 
 impl Directory {
     pub fn new(dirpath: &str) -> Directory {
         Directory {
             dirpath: String::from(dirpath),
+            ignored_file_path: String::from(format!("{}/.archivefs-ignore", dirpath)),
         }
     }
 
@@ -66,6 +68,14 @@ impl Directory {
         archives
     }
 
+    fn ignored(&self) -> bool {
+        self.ignored_file_path().exists()
+    }
+
+    fn ignored_file_path(&self) -> &std::path::Path {
+        std::path::Path::new(&self.ignored_file_path)
+    }
+
     fn path(&self) -> &std::path::Path {
         std::path::Path::new(&self.dirpath)
     }
@@ -84,6 +94,10 @@ impl Browseable for Directory {
         let entries = std::fs::read_dir(&self.dirpath).unwrap();
 
         let mut subdirectories: Vec<Box<dyn Browseable>> = vec![];
+
+        if self.ignored() {
+            return subdirectories;
+        }
 
         for node in entries {
             let n = node.unwrap();
@@ -107,6 +121,10 @@ impl Browseable for Directory {
         let re = Regex::new(r"^r\d{2}$").unwrap();
 
         let mut files: Vec<Box<dyn Readable>> = vec![];
+
+        if self.ignored() {
+            return files;
+        }
 
         for node in entries {
             let n = node.unwrap();
