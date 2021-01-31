@@ -1,6 +1,6 @@
 [package]
 name = "archivefs"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["André Ligné <hi@andreligne.se>"]
 build = "build.rs"
 
