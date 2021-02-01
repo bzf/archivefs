@@ -1,6 +1,6 @@
 extern crate libc;
 
-use libc::size_t;
+use libc::{size_t, ssize_t};
 use std::ffi::CString;
 use std::os::raw::c_char;
 use std::ptr;
@@ -11,7 +11,7 @@ pub enum ArchiveEntry {}
 pub enum Archive {}
 
 extern "C" {
-    pub fn archive_read_data(_: *mut Archive, _: *mut c_char, _: size_t) -> size_t;
+    pub fn archive_read_data(_: *mut Archive, _: *mut c_char, _: size_t) -> ssize_t;
     pub fn archive_read_data_skip(_: *mut Archive) -> i64;
 
     pub fn archive_seek_data(_: *mut Archive, _: i64, _: i64) -> i64;
