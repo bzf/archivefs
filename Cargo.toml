@@ -10,6 +10,9 @@ walkdir = "2"
 tempdir = "0.3"
 regex = "1"
 
+[build-dependencies]
+bindgen = "0.53.1"
+
 [lib]
 name = "archivefs"
 crate-type = ["dylib", "rlib"]
