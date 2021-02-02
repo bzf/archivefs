@@ -17,19 +17,19 @@ impl FSFile {
     pub fn new(path: &str, filesize: u64, archive_path: &str) -> FSFile {
         FSFile {
             path: String::from(path),
-            filesize: filesize,
+            filesize,
             archive_path: String::from(archive_path),
         }
     }
 
-    fn open(&self) -> *mut ffi::Archive {
-        let archive: *mut ffi::Archive = unsafe { ffi::archive_read_new() };
+    fn open(&self) -> *mut ffi::archive {
+        let archive: *mut ffi::archive = unsafe { ffi::archive_read_new() };
         unsafe { ffi::archive_read_support_filter_all(archive) };
         unsafe { ffi::archive_read_support_format_all(archive) };
 
         ffi::archive_open_and_read_from_path(&self.path, archive, 8192);
 
-        let mut entry: *mut ffi::ArchiveEntry = ptr::null_mut();
+        let mut entry: *mut ffi::archive_entry = ptr::null_mut();
         let our_entry_path: &str = &self.archive_path;
 
         while unsafe { ffi::archive_read_next_header(archive, &mut entry) == 0x0 } {
@@ -64,14 +64,15 @@ impl Readable for FSFile {
     }
 
     fn write_to_buffer(&self, buffer_ptr: *mut [u8], size: size_t, offset: off_t) -> size_t {
-        let archive_ptr: *mut ffi::Archive = self.open();
+        let archive_ptr: *mut ffi::archive = self.open();
 
         if offset != -1 {
             unsafe { ffi::archive_seek_data(archive_ptr, offset, 0) };
         }
 
-        let bytes_written =
-            unsafe { ffi::archive_read_data(archive_ptr, buffer_ptr as *mut i8, size) };
+        let bytes_written = unsafe {
+            ffi::archive_read_data(archive_ptr, buffer_ptr as *mut libc::c_void, size as u64)
+        };
 
         unsafe { ffi::archive_read_free(archive_ptr) };
 

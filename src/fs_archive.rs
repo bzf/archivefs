@@ -67,7 +67,7 @@ impl Browseable for FSArchive {
 
     fn list_files(&self) -> Vec<Box<dyn Readable>> {
         let mut archive_files: Vec<Box<dyn Readable>> = vec![];
-        let archive: *mut ffi::Archive = unsafe { ffi::archive_read_new() };
+        let archive: *mut ffi::archive = unsafe { ffi::archive_read_new() };
 
         unsafe {
             ffi::archive_read_support_filter_all(archive);
@@ -75,7 +75,7 @@ impl Browseable for FSArchive {
             ffi::archive_open_and_read_from_path(&self.archive_path, archive, 8192);
         };
 
-        let mut archive_entry: *mut ffi::ArchiveEntry = ptr::null_mut();
+        let mut archive_entry: *mut ffi::archive_entry = ptr::null_mut();
 
         loop {
             if unsafe { ffi::archive_read_next_header(archive, &mut archive_entry) != 0 } {
